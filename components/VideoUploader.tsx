@@ -3,12 +3,19 @@
 import { useState } from "react";
 import { PlayerWithControls } from "@/components/PlayerWithControls";
 import { Src } from "@livepeer/react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertCircle, CheckCircle2, Upload } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export function VideoUploader() {
   const [video, setVideo] = useState<File | null>(null);
   const [playbackId, setPlaybackId] = useState<string>("");
   const [assetStatus, setAssetStatus] = useState<string>("idle");
   const [videoSrc, setVideoSrc] = useState<Src[] | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -18,6 +25,9 @@ export function VideoUploader() {
 
   const handleUpload = async () => {
     if (video) {
+      setAssetStatus("uploading");
+      setUploadProgress(0);
+
       const res = await fetch("/api/request-upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -25,15 +35,27 @@ export function VideoUploader() {
       });
       const data = await res.json();
 
-      await fetch(data.url, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/octet-stream",
-        },
-        body: video,
-      });
+      const xhr = new XMLHttpRequest();
+      xhr.open("PUT", data.url, true);
+      xhr.setRequestHeader("Content-Type", "application/octet-stream");
 
-      checkAssetStatus(data.asset.id);
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const percentComplete = (e.loaded / e.total) * 100;
+          setUploadProgress(percentComplete);
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          setAssetStatus("processing");
+          checkAssetStatus(data.asset.id);
+        } else {
+          setAssetStatus("error");
+        }
+      };
+
+      xhr.send(video);
     }
   };
 
@@ -63,49 +85,61 @@ export function VideoUploader() {
   };
 
   return (
-    <div className="bg-card rounded-lg shadow-xl p-6">
-      <h2 className="text-2xl font-semibold mb-4 text-card-foreground">
-        Upload Video
-      </h2>
-      <input
-        type="file"
-        accept="video/*"
-        onChange={handleFileChange}
-        className="block w-full text-sm text-muted-foreground
-                    file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0
-                    file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground
-                    hover:file:bg-primary/90"
-      />
-      <button
-        disabled={!video}
-        onClick={handleUpload}
-        className={`mt-4 w-full py-2 px-4 rounded font-bold text-primary-foreground transition-colors ${
-          !video
-            ? "bg-muted cursor-not-allowed"
-            : "bg-primary hover:bg-primary/90"
-        }`}
-      >
-        Upload Video
-      </button>
+    <Card className="w-full max-w-2xl mx-auto">
+      <CardHeader>
+        <CardTitle>Upload Video</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <Input
+            type="file"
+            accept="video/*"
+            onChange={handleFileChange}
+            className="cursor-pointer"
+          />
+          <Button
+            onClick={handleUpload}
+            disabled={!video || assetStatus !== "idle"}
+            className="w-full"
+          >
+            <Upload className="mr-2 h-4 w-4" /> Upload Video
+          </Button>
 
-      {assetStatus !== "idle" && assetStatus !== "ready" && (
-        <div className="mt-4">
-          <p className="text-sm text-muted-foreground">
-            Asset Status: {assetStatus}
-          </p>
-        </div>
-      )}
+          {assetStatus !== "idle" && (
+            <Alert
+              variant={assetStatus === "error" ? "destructive" : "default"}
+            >
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Status</AlertTitle>
+              <AlertDescription>
+                {assetStatus === "uploading" && (
+                  <>
+                    Uploading: {uploadProgress.toFixed(0)}%
+                    <Progress value={uploadProgress} className="mt-2" />
+                  </>
+                )}
+                {assetStatus === "processing" && "Processing video..."}
+                {assetStatus === "ready" && (
+                  <>
+                    <CheckCircle2 className="h-4 w-4 inline mr-2" />
+                    Video ready!
+                  </>
+                )}
+                {assetStatus === "error" && "Error uploading video"}
+              </AlertDescription>
+            </Alert>
+          )}
 
-      {playbackId && (
-        <div className="md:col-span-2 bg-card rounded-lg shadow-xl p-6">
-          <h2 className="text-2xl font-semibold mb-4 text-card-foreground">
-            Preview
-          </h2>
-          <div className="aspect-w-16 aspect-h-9">
-            <PlayerWithControls src={videoSrc as Src[]} />
-          </div>
+          {playbackId && (
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-2">Preview</h3>
+              <div className="aspect-video">
+                <PlayerWithControls src={videoSrc as Src[]} />
+              </div>
+            </div>
+          )}
         </div>
-      )}
-    </div>
+      </CardContent>
+    </Card>
   );
 }
