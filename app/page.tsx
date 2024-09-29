@@ -1,101 +1,119 @@
-import Image from "next/image";
+"use client"
+
+// app/page.tsx
+
+import { useState } from 'react';
+import { PlayerWithControls } from '@/components/PlayerWithControls';
+import { Src } from '@livepeer/react';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [video, setVideo] = useState<File | null>(null);
+  // const [assetId, setAssetId] = useState<string>('');
+  const [playbackId, setPlaybackId] = useState<string>('');
+  const [assetStatus, setAssetStatus] = useState<string>('idle');
+  const [videoSrc, setVideoSrc] = useState<Src[] | null>(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setVideo(e.target.files[0]);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (video) {
+      // Request upload URL
+      const res = await fetch('/api/request-upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: video.name }),
+      });
+      const data = await res.json();
+
+      // setAssetId(asset.id);
+
+      // Upload the file using the upload URL
+      await fetch(data.url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/octet-stream',
+        },
+        body: video,
+      });
+
+      // Poll for asset status
+      checkAssetStatus(data.asset.id);
+    }
+  };
+
+  const checkAssetStatus = async (id: string) => {
+    const interval = setInterval(async () => {
+      const res = await fetch(`/api/asset-status?id=${id}`);
+      const data = await res.json();
+  
+      setAssetStatus(data.status.phase);
+  
+      if (data.status.phase === 'ready') {
+        clearInterval(interval);
+        setPlaybackId(data.playbackId);
+        
+        // Fetch the playback source from our new API route
+        const sourceRes = await fetch(`/api/get-playback-source?playbackId=${data.playbackId}`);
+        const sourceData = await sourceRes.json();
+        
+        if (sourceData.src) {
+          setVideoSrc(sourceData.src);
+        } else {
+          console.error('Failed to fetch playback source');
+        }
+      }
+    }, 5000);
+  };
+
+  return (
+    <main className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center p-4">
+      <div className="bg-gray-800 rounded-lg shadow-xl p-8 max-w-md w-full">
+        <h1 className="text-4xl font-bold mb-6 text-center">Lanternade</h1>
+        <p className="text-gray-300 mb-6 text-center">
+          Decentralized Web3 Social Platform
+        </p>
+        <div className="space-y-4">
+          <input
+            type="file"
+            accept="video/*"
+            onChange={handleFileChange}
+            className="block w-full text-sm text-gray-300
+                       file:py-2 file:px-4 file:rounded-full file:border-0
+                       file:text-sm file:font-semibold file:bg-blue-500 file:text-white
+                       hover:file:bg-blue-600"
+          />
+          <button
+            disabled={!video}
+            onClick={handleUpload}
+            className={`w-full py-2 px-4 rounded font-bold text-white transition-colors ${
+              !video
+                ? 'bg-gray-600 cursor-not-allowed'
+                : 'bg-blue-500 hover:bg-blue-600'
+            }`}
           >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            Upload Video
+          </button>
+
+          {assetStatus !== 'idle' && assetStatus !== 'ready' && (
+            <div className="mt-4">
+              <p className="text-sm text-gray-300">Asset Status: {assetStatus}</p>
+            </div>
+          )}
+
+          {playbackId && (
+            <div className="mt-8 w-full">
+              <h2 className="text-2xl font-bold mb-4">Uploaded Video</h2>
+              <div className="aspect-w-16 aspect-h-9">
+              <PlayerWithControls src={videoSrc as Src[]} />
+              </div>
+            </div>
+          )}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      </div>
+    </main>
   );
 }
