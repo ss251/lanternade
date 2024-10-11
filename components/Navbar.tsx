@@ -1,15 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { SunIcon, MoonIcon } from "lucide-react";
 import { useTheme } from "next-themes";
+import { NeynarAuthButton, useNeynarContext } from "@neynar/react";
 
 function Navbar() {
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
+  const { user } = useNeynarContext();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background border-b">
@@ -79,7 +80,9 @@ function Navbar() {
             <div className="hidden md:flex space-x-4">
               <NavLink href="/feed" active={pathname === "/feed"}>Feed</NavLink>
               <NavLink href="/creator" active={pathname === "/creator"}>Creator</NavLink>
-              <NavLink href="/profile" active={pathname === "/profile"}>Profile</NavLink>
+              {user && (
+                <NavLink href="/profile" active={pathname === "/profile"}>Profile</NavLink>
+              )}
             </div>
 
             <Button
@@ -93,39 +96,44 @@ function Navbar() {
               <span className="sr-only">Toggle theme</span>
             </Button>
 
-            <Button
-              variant="outline"
-              className="bg-farcaster text-white hover:bg-farcaster/80 transition-colors"
-            >
-              <Image
-                src="https://raw.githubusercontent.com/vrypan/farcaster-brand/refs/heads/main/icons/icon-square/purple-white.png"
-                alt="Farcaster logo"
-                width={20}
-                height={20}
-                className="mr-2 rounded-sm"
-              />
-              <span className="hidden sm:inline">Sign in with Farcaster</span>
-            </Button>
+            <NeynarAuthButton 
+              customLogoUrl="https://raw.githubusercontent.com/vrypan/farcaster-brand/refs/heads/main/icons/icon-transparent/transparent-white.png"
+              className="!bg-farcaster !text-white !rounded-none !py-1 !h-10"
+              modalStyle={{
+                backgroundColor: 'hsl(var(--card))',
+                color: 'hsl(var(--card-foreground)) !important',
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                borderRadius: '0',
+              }}
+              modalButtonStyle={{
+                backgroundColor: 'hsl(var(--farcaster))',
+                color: 'hsl(var(--primary-foreground)) !important',
+                padding: '0.5rem 1rem',
+                borderRadius: '0',
+                border: 'none',
+              }}
+              label="Sign In"
+            />
           </div>
         </div>
       </div>
     </nav>
-  )
+  );
 }
 
 function NavLink({ href, active, children }: { href: string; active: boolean; children: React.ReactNode }) {
-    return (
-      <Link
-        href={href}
-        className={`text-base font-medium transition-colors ${
-          active
-            ? "text-primary"
-            : "text-foreground hover:text-primary"
-        }`}
-      >
-        {children}
-      </Link>
-    )
-  }
-  
-  export default Navbar
+  return (
+    <Link
+      href={href}
+      className={`text-base font-medium transition-colors ${
+        active
+          ? "text-primary"
+          : "text-foreground hover:text-primary"
+      }`}
+    >
+      {children}
+    </Link>
+  );
+}
+
+export default Navbar;
