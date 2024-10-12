@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNeynarContext } from "@neynar/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -49,11 +49,11 @@ export default function Feed() {
       }
     };
   
-    const handleLoadMore = () => {
-      if (cursor) {
-        fetchFeed(cursor);
-      }
-    };
+    // const handleLoadMore = () => {
+    //   if (cursor) {
+    //     fetchFeed(cursor);
+    //   }
+    // };
   
     const handleLike = async (hash: string) => {
       // Implement like functionality
@@ -89,6 +89,8 @@ export default function Feed() {
             controls
             width="100%"
             height="auto"
+            light
+            playsinline
           />
         );
       }
@@ -117,6 +119,18 @@ export default function Feed() {
       </Card>
     );
 
+    const observer = useRef<IntersectionObserver | null>(null);
+    const lastCastElementRef = useCallback((node: HTMLDivElement | null) => {
+        if (loading) return;
+        if (observer.current) observer.current.disconnect();
+        observer.current = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting && cursor) {
+                fetchFeed(cursor);
+            }
+        });
+        if (node) observer.current.observe(node);
+    }, [loading, cursor]);
+
     return (
         <div className="max-w-2xl mx-auto p-4">
           <h1 className="text-3xl font-bold mb-6 text-center">Feed</h1>
@@ -128,55 +142,55 @@ export default function Feed() {
               ))
             ) : (
               // Existing feed rendering logic
-              feed.map((cast) => (
-                <Card key={cast.hash} className="overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
-                  <CardContent className="p-4">
-                    <div className="flex items-center mb-3">
-                      <Image
-                        src={cast.author.pfp_url}
-                        alt={cast.author.display_name}
-                        width={40}
-                        height={40}
-                        className="rounded-full mr-3"
-                      />
-                      <div>
-                        <p className="font-semibold text-sm">{cast.author.display_name}</p>
-                        <p className="text-gray-500 text-xs">@{cast.author.username}</p>
+              feed.map((cast, index) => (
+                <div 
+                  key={cast.hash} 
+                  ref={index === feed.length - 1 ? lastCastElementRef : null}
+                >
+                  <Card key={cast.hash} className="overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
+                    <CardContent className="p-4">
+                      <div className="flex items-center mb-3">
+                        <Image
+                          src={cast.author.pfp_url}
+                          alt={cast.author.display_name}
+                          width={40}
+                          height={40}
+                          className="rounded-full mr-3"
+                        />
+                        <div>
+                          <p className="font-semibold text-sm">{cast.author.display_name}</p>
+                          <p className="text-gray-500 text-xs">@{cast.author.username}</p>
+                        </div>
+                        <p className="ml-auto text-xs text-gray-400">
+                          {new Date(cast.timestamp).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+                        </p>
                       </div>
-                      <p className="ml-auto text-xs text-gray-400">
-                        {new Date(cast.timestamp).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
-                      </p>
-                    </div>
-                    <p className="text-sm mb-3">{cast.text}</p>
-                    {cast.embeds.map((embed, index) => (
-                      <div key={index} className="mb-3">
-                        {renderEmbed(embed)}
+                      <p className="text-sm mb-3">{cast.text}</p>
+                      {cast.embeds.map((embed, index) => (
+                        <div key={index} className="mb-3">
+                          {renderEmbed(embed)}
+                        </div>
+                      ))}
+                      <div className="flex justify-between text-sm text-gray-500">
+                        <Button variant="ghost" size="sm" onClick={() => handleLike(cast.hash)} className="flex items-center hover:text-red-500">
+                          <Heart size={18} className={cast.viewer_context.liked ? 'fill-red-500 text-red-500' : ''} />
+                          <span className="ml-1">{cast.reactions.likes_count}</span>
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleRecast(cast.hash)} className="flex items-center hover:text-green-500">
+                          <Repeat size={18} className={cast.viewer_context.recasted ? 'text-green-500' : ''} />
+                          <span className="ml-1">{cast.reactions.recasts_count}</span>
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleReply(cast.hash)} className="flex items-center hover:text-blue-500">
+                          <MessageCircle size={18} />
+                          <span className="ml-1">{cast.replies.count}</span>
+                        </Button>
                       </div>
-                    ))}
-                    <div className="flex justify-between text-sm text-gray-500">
-                      <Button variant="ghost" size="sm" onClick={() => handleLike(cast.hash)} className="flex items-center hover:text-red-500">
-                        <Heart size={18} className={cast.viewer_context.liked ? 'fill-red-500 text-red-500' : ''} />
-                        <span className="ml-1">{cast.reactions.likes_count}</span>
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleRecast(cast.hash)} className="flex items-center hover:text-green-500">
-                        <Repeat size={18} className={cast.viewer_context.recasted ? 'text-green-500' : ''} />
-                        <span className="ml-1">{cast.reactions.recasts_count}</span>
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleReply(cast.hash)} className="flex items-center hover:text-blue-500">
-                        <MessageCircle size={18} />
-                        <span className="ml-1">{cast.replies.count}</span>
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </div>
               ))
             )}
             {error && <div className="text-red-500 text-center">{error}</div>}
-            {cursor && (
-              <Button onClick={handleLoadMore} disabled={loading} className="w-full text-foreground bg-primary text-white">
-                {loading ? 'Loading...' : 'Load More'}
-              </Button>
-            )}
             {loading && feed.length > 0 && (
               // Show a single skeleton when loading more
               <div>{renderSkeleton()}</div>
