@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { useSwipeable } from 'react-swipeable';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 interface ImageGalleryProps {
-  images: { url: string; width?: number; height?: number }[];
+  images: { url: string; width: number; height: number }[];
 }
 
 const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
@@ -25,8 +26,9 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
             <Image
               src={images[0].url}
               alt="Embedded image"
-              width={images[0].width || 500}
-              height={images[0].height || 300}
+              width={images[0].width}
+              height={images[0].height}
+              style={{ width: '100%', height: 'auto' }}
               onClick={() => {
                 setOpenImage(images[0].url);
                 setCurrentIndex(0);
@@ -42,8 +44,9 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
                 <Image
                   src={image.url}
                   alt={`Embedded image ${index + 1}`}
-                  width={image.width || 250}
-                  height={image.height || 250}
+                  width={image.width}
+                  height={image.height}
+                  style={{ width: '100%', height: 'auto' }}
                   onClick={() => {
                     setOpenImage(image.url);
                     setCurrentIndex(index);
@@ -60,13 +63,16 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
             {images.map((image, index) => (
               <div
                 key={index}
-                className={`cursor-pointer ${index === 0 && images.length === 3 ? 'col-span-2' : ''}`}
+                className={`cursor-pointer ${
+                  index === 0 && images.length === 3 ? 'col-span-2' : ''
+                }`}
               >
                 <Image
                   src={image.url}
                   alt={`Embedded image ${index + 1}`}
-                  width={image.width || 250}
-                  height={image.height || 250}
+                  width={image.width}
+                  height={image.height}
+                  style={{ width: '100%', height: 'auto' }}
                   onClick={() => {
                     setOpenImage(image.url);
                     setCurrentIndex(index);
@@ -86,12 +92,19 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
       {renderThumbnails()}
       <Dialog open={!!openImage} onOpenChange={() => setOpenImage(null)}>
         <DialogContent className="max-w-4xl p-0" {...handlers}>
-          <div className="relative">
+          <VisuallyHidden>
+            <DialogTitle>Image Gallery</DialogTitle>
+            <DialogDescription>
+              {images[currentIndex].url}
+            </DialogDescription>
+          </VisuallyHidden>
+          <div className="relative h-[80vh]">
             <Image
               src={images[currentIndex].url}
               alt="Full size image"
-              width={1000}
-              height={1000}
+              width={images[currentIndex].width}
+              height={images[currentIndex].height}
+              style={{ width: '100%', height: 'auto', maxHeight: '80vh', objectFit: 'contain' }}
             />
             {images.length > 1 && (
               <>

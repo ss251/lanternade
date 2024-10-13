@@ -14,8 +14,8 @@ const EmbedRenderer: React.FC<EmbedRendererProps> = ({ embeds }) => {
 
   const images = imageEmbeds.map(embed => ({
     url: embed.url || '',
-    width: embed.metadata?.image?.width_px,
-    height: embed.metadata?.image?.height_px,
+    width: embed.metadata?.image?.width_px || 0,
+    height: embed.metadata?.image?.height_px || 0,
   }));
 
   return (

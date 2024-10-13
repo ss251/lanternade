@@ -78,7 +78,7 @@ export default function Feed() {
         ) : (
           feed.map((cast, index) => (
             <div 
-              key={cast.hash} 
+              key={`${cast.hash}-${index}`} 
               ref={index === feed.length - 1 ? lastCastElementRef : null}
             >
               <CastCard

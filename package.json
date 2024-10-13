@@ -13,6 +13,7 @@
     "@livepeer/react": "^4.2.7",
     "@neynar/nodejs-sdk": "^1.61.0",
     "@neynar/react": "^0.9.5",
+    "@radix-ui/react-avatar": "^1.1.1",
     "@radix-ui/react-dialog": "^1.1.2",
     "@radix-ui/react-progress": "^1.1.0",
     "@radix-ui/react-slot": "^1.1.0",

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
 import { Heart, Repeat, MessageCircle } from 'lucide-react';
 import { Cast } from '@/types/neynar';
 import EmbedRenderer from './EmbedRenderer';
 import Link from 'next/link';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
 interface CastCardProps {
   cast: Cast;
@@ -38,13 +38,26 @@ const CastCard: React.FC<CastCardProps> = ({ cast, handleLike, handleRecast, han
   const renderCastContent = (contentCast: Cast, isRecast: boolean = false) => (
     <div className={`${isRecast ? "dark:bg-secondary/50 bg-secondary/10 rounded-lg p-3 mt-3" : ""}`}>
       <div className="flex items-center mb-2">
-        <Image
+        {/* <Image
           src={contentCast.author.pfp_url}
           alt={contentCast.author.display_name}
           width={32}
           height={32}
           className="rounded-full mr-2"
-        />
+          style={{objectFit: 'cover'}}
+        /> */}
+        <Avatar className="mr-2">
+          <div className="w-full h-full rounded-full overflow-hidden">
+            <AvatarImage 
+              src={contentCast.author.pfp_url} 
+              alt={contentCast.author.display_name}
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <AvatarFallback>
+            {contentCast.author.display_name.charAt(0)}
+          </AvatarFallback>
+        </Avatar>
         <div>
           <Link
             href={`https://warpcast.com/${contentCast.author.username}`}
