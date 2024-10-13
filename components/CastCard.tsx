@@ -15,9 +15,10 @@ import RepliesSection from './RepliesSection';
 
 interface CastCardProps {
   cast: Cast;
+  showRecast?: boolean;
 }
 
-const CastCard: React.FC<CastCardProps> = ({ cast }) => {
+const CastCard: React.FC<CastCardProps> = ({ cast, showRecast = true }) => {
   const [recastedCast, setRecastedCast] = useState<Cast | null>(null);
   const [isLiked, setIsLiked] = useState(cast.viewer_context?.liked || false);
   const [isRecasted, setIsRecasted] = useState(cast.viewer_context?.recasted || false);
@@ -94,8 +95,8 @@ const CastCard: React.FC<CastCardProps> = ({ cast }) => {
     fetchRecastedCast();
   }, [cast]);
 
-  const renderCastContent = (contentCast: Cast, isRecast: boolean = false) => (
-    <div className={`${isRecast ? "dark:bg-secondary/50 bg-secondary/10 rounded-lg p-3 mt-3" : ""}`}>
+  const renderCastContent = (contentCast: Cast, isRecast: boolean = false, showRecast: boolean = true) => (
+    <div className={`${isRecast && showRecast ? "dark:bg-secondary/50 bg-secondary/10 rounded-lg p-3 mt-3" : ""}`}>
       <div className="flex items-center mb-2">
         {/* <Image
           src={contentCast.author.pfp_url}
@@ -146,14 +147,14 @@ const CastCard: React.FC<CastCardProps> = ({ cast }) => {
   return (
       <Card className="overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={navigateToCastPage}>
         <CardContent className="p-4">
-          {recastedCast ? (
+          {recastedCast && showRecast ? (
             <>
               <div className="flex items-center text-sm text-muted-foreground mb-3">
                 <Repeat className="mr-1" size={14} />
                 {cast.author.display_name} recasted
               </div>
               {renderCastContent(cast)}
-              {renderCastContent(recastedCast, true)}
+              {renderCastContent(recastedCast, true, showRecast)}
             </>
           ) : (
             renderCastContent(cast)
