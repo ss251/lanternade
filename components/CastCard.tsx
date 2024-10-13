@@ -1,13 +1,17 @@
+'use client'
+
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, Repeat, MessageCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { Heart, Repeat, MessageCircle } from 'lucide-react';
 import { Cast } from '@/types/neynar';
 import EmbedRenderer from './EmbedRenderer';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { useNeynarContext } from '@neynar/react';
-import CommentSection from './CommentSection';
+import ReplyModal from './ReplyModal';
+import { useRouter } from 'next/navigation';
+import RepliesSection from './RepliesSection';
 
 interface CastCardProps {
   cast: Cast;
@@ -20,7 +24,14 @@ const CastCard: React.FC<CastCardProps> = ({ cast }) => {
   const [likesCount, setLikesCount] = useState(cast.reactions.likes.length);
   const [recastsCount, setRecastsCount] = useState(cast.reactions.recasts.length);
   const { user } = useNeynarContext();
-  const [showComments, setShowComments] = useState(false);
+  const [showReplies, setShowReplies] = useState(false);
+  const [isReplyModalOpen, setIsReplyModalOpen] = useState(false);
+
+  const router = useRouter();
+
+  const navigateToCastPage = () => {
+    router.push(`/cast/${cast.hash}`);
+  };
 
   const handleReaction = async (type: 'like' | 'recast') => {
     if (!user) return;
@@ -59,8 +70,10 @@ const CastCard: React.FC<CastCardProps> = ({ cast }) => {
   const handleLikeClick = () => handleReaction('like');
   const handleRecastClick = () => handleReaction('recast');
 
-  const toggleComments = () => {
-    setShowComments(!showComments);
+  const openReplyModal = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowReplies(true);
+    setIsReplyModalOpen(true);
   };
 
   useEffect(() => {
@@ -131,42 +144,46 @@ const CastCard: React.FC<CastCardProps> = ({ cast }) => {
   );
 
   return (
-    <Card className="overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
-      <CardContent className="p-4">
-        {recastedCast ? (
-          <>
-            <div className="flex items-center text-sm text-muted-foreground mb-3">
-              <Repeat className="mr-1" size={14} />
-              {cast.author.display_name} recasted
-            </div>
-            {renderCastContent(cast)}
-            {renderCastContent(recastedCast, true)}
-          </>
-        ) : (
-          renderCastContent(cast)
-        )}
-        <div className="flex justify-between text-sm text-muted-foreground mt-3">
-          <Button variant="ghost" size="sm" onClick={handleLikeClick} className="flex items-center">
-            <Heart size={16} className={`${isLiked ? 'fill-red-500' : ''} text-red-500`} />
-            <span className="ml-1">{likesCount}</span>
-          </Button>
-          <Button variant="ghost" size="sm" onClick={handleRecastClick} className="flex items-center">
-            <Repeat size={16} className={`${isRecasted ? 'fill-green-500' : ''}`} />
-            <span className="ml-1">{recastsCount}</span>
-          </Button>
-          
-            <Button variant="ghost" size="sm" onClick={toggleComments} className="flex items-center">
+      <Card className="overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={navigateToCastPage}>
+        <CardContent className="p-4">
+          {recastedCast ? (
+            <>
+              <div className="flex items-center text-sm text-muted-foreground mb-3">
+                <Repeat className="mr-1" size={14} />
+                {cast.author.display_name} recasted
+              </div>
+              {renderCastContent(cast)}
+              {renderCastContent(recastedCast, true)}
+            </>
+          ) : (
+            renderCastContent(cast)
+          )}
+          <div className="flex justify-between text-sm text-muted-foreground mt-3">
+            <Button variant="ghost" size="sm" onClick={handleLikeClick} className="flex items-center">
+              <Heart size={16} className={`${isLiked ? 'fill-red-500' : ''} text-red-500`} />
+              <span className="ml-1">{likesCount}</span>
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleRecastClick} className="flex items-center">
+              <Repeat size={16} className={`${isRecasted ? 'fill-green-500' : ''}`} />
+              <span className="ml-1">{recastsCount}</span>
+            </Button>
+            <Button variant="ghost" size="sm" onClick={openReplyModal} className="flex items-center">
               <MessageCircle size={16} />
-            <span className="ml-1">{cast.replies.count}</span>
-            {cast.replies.count > 0 && (
-              showComments ? <ChevronUp size={16} className="ml-1" /> : <ChevronDown size={16} className="ml-1" />
-            )}
-          </Button>
-        
-        </div>
-        {showComments && <CommentSection parentHash={cast.hash} repliesCount={cast.replies.count} />}
-      </CardContent>
-    </Card>
+              <span className="ml-1">{cast.replies.count}</span>
+            </Button>
+          </div>
+          {showReplies && <RepliesSection parentHash={cast.hash} repliesCount={cast.replies.count}/>}
+          {isReplyModalOpen && (
+            <ReplyModal
+              cast={cast}
+              onClose={() => {
+                setShowReplies(false);
+                setIsReplyModalOpen(false);
+              }}
+            />
+          )}
+        </CardContent>
+      </Card>
   );
 };
 

@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-const CommentSkeleton = () => {
+const RepliesSkeleton = () => {
   return (
     <div className="flex space-x-4 mb-4">
       <Skeleton className="h-10 w-10 rounded-full" />
@@ -13,5 +13,5 @@ const CommentSkeleton = () => {
   );
 };
 
-export default CommentSkeleton;
+export default RepliesSkeleton;
 
