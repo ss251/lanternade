@@ -24,23 +24,22 @@ export default function Feed() {
         fetchFeed();
       }
     }, [user]);
+
+    const POSTS_PER_LOAD = 5;
   
     const fetchFeed = async (cursorParam?: string) => {
       if (loading || !user) return;
       setLoading(true);
       setError(null);
-  
+    
       try {
-        const url = `/api/farcaster/feed?fid=${user.fid}${cursorParam ? `&cursor=${cursorParam}` : ''}`;
+        const url = `/api/farcaster/feed?fid=${user.fid}&limit=${POSTS_PER_LOAD}${cursorParam ? `&cursor=${cursorParam}` : ''}`;
         const response = await fetch(url);
         if (!response.ok) throw new Error('Failed to fetch feed');
         const data = await response.json();
-  
-        const filteredCasts = data.casts.filter((cast: Cast) => 
-          cast.embeds.some(embed => embed.metadata && (embed.metadata.image || embed.metadata.video))
-        );
-  
-        setFeed(prevFeed => cursorParam ? [...prevFeed, ...filteredCasts] : filteredCasts);
+    
+        // Remove the filtering
+        setFeed(prevFeed => cursorParam ? [...prevFeed, ...data.casts] : data.casts);
         setCursor(data.next?.cursor);
       } catch (err) {
         setError('Error fetching feed. Please try again.');

@@ -6,6 +6,7 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const fid = searchParams.get('fid');
   const cursor = searchParams.get('cursor');
+  const limit = searchParams.get('limit');
 
   if (!fid) {
     return NextResponse.json({ error: "FID is required" }, { status: 400 });
@@ -14,7 +15,7 @@ export async function GET(request: NextRequest) {
   const url = new URL("https://api.neynar.com/v2/farcaster/feed");
   url.searchParams.append("feed_type", "following");
   url.searchParams.append("fid", fid);
-  url.searchParams.append("limit", "20");
+  url.searchParams.append("limit", limit || "7");
   if (cursor) {
     url.searchParams.append("cursor", cursor);
   }
