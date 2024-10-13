@@ -16,10 +16,8 @@ import {
   Maximize,
   Minimize,
 } from "lucide-react";
-import { useTheme } from "next-themes";
 
 export function PlayerWithControls({ src }: { src: Src[] }) {
-  const { theme } = useTheme();
   const [isLoading, setIsLoading] = React.useState(true);
 
   const handleLoadStart = () => setIsLoading(true);
@@ -42,20 +40,18 @@ export function PlayerWithControls({ src }: { src: Src[] }) {
           className={cn("h-full w-full object-contain")}
           onLoadStart={handleLoadStart}
           onLoadedData={handleLoadedData}
+          muted
         />
 
         {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+          <div className="absolute inset-0 flex items-center justify-center bg-black">
             <Loader2Icon className="h-12 w-12 animate-spin text-primary" />
           </div>
         )}
 
         <Player.Controls 
           className={cn(
-            "absolute bottom-0 left-0 right-0 flex flex-col-reverse gap-2 p-3 transition-opacity duration-300",
-            theme === 'dark'
-              ? 'bg-gradient-to-t from-black via-black/80 to-transparent'
-              : 'bg-gradient-to-t from-white/90 via-white/60 to-transparent'
+            "absolute bottom-0 left-0 right-0 flex flex-col-reverse gap-2 p-3 duration-300"
           )}
         >
           <Player.Seek className="group relative flex w-full items-center">
