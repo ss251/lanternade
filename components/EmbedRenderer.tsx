@@ -3,14 +3,12 @@ import Image from "next/image";
 import { Embed } from '@/types/neynar';
 import { PlayerWithControls } from '@/components/PlayerWithControls';
 import { getSrc } from '@livepeer/react/external';
-import CastSkeleton from './CastSkeleton';
 
 interface EmbedRendererProps {
   embed: Embed;
-  recastedCast?: React.ReactNode;
 }
 
-const EmbedRenderer: React.FC<EmbedRendererProps> = ({ embed, recastedCast }) => {
+const EmbedRenderer: React.FC<EmbedRendererProps> = ({ embed }) => {
    if (embed.metadata?.image) {
     return (
       <Image
@@ -29,7 +27,7 @@ const EmbedRenderer: React.FC<EmbedRendererProps> = ({ embed, recastedCast }) =>
       />
     );
   } else if(embed.cast_id) {
-    return recastedCast || <CastSkeleton />;
+    return null; // We're handling recasts in the CastCard component now
   }
   return null;
 };

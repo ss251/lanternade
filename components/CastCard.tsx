@@ -34,32 +34,45 @@ const CastCard: React.FC<CastCardProps> = ({ cast, handleLike, handleRecast, han
     fetchRecastedCast();
   }, [cast]);
 
+  const renderCastContent = (contentCast: Cast, isRecast: boolean = false) => (
+    <div className={isRecast ? "border-l-2 border-primary pl-3 mt-3" : ""}>
+      <div className="flex items-center mb-3">
+        <Image
+          src={contentCast.author.pfp_url}
+          alt={contentCast.author.display_name}
+          width={40}
+          height={40}
+          className="rounded-full mr-3"
+        />
+        <div>
+          <p className="font-semibold text-sm">{contentCast.author.display_name}</p>
+          <p className="text-gray-500 text-xs">@{contentCast.author.username}</p>
+        </div>
+        <p className="ml-auto text-xs text-gray-400">
+          {new Date(contentCast.timestamp).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+        </p>
+      </div>
+      <p className="text-sm mb-3">{contentCast.text}</p>
+      {contentCast.embeds.map((embed: Embed, index: number) => (
+        <div key={index} className="mb-3">
+          <EmbedRenderer embed={embed} />
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <Card className="overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
       <CardContent className="p-4">
-        <div className="flex items-center mb-3">
-          <Image
-            src={cast.author.pfp_url}
-            alt={cast.author.display_name}
-            width={40}
-            height={40}
-            className="rounded-full mr-3"
-          />
-          <div>
-            <p className="font-semibold text-sm">{cast.author.display_name}</p>
-            <p className="text-gray-500 text-xs">@{cast.author.username}</p>
+        {recastedCast && (
+          <div className="text-sm text-gray-500 mb-2">
+            <Repeat className="inline-block mr-1" size={16} />
+            {cast.author.display_name} recasted
           </div>
-          <p className="ml-auto text-xs text-gray-400">
-            {new Date(cast.timestamp).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
-          </p>
-        </div>
-        <p className="text-sm mb-3">{cast.text}</p>
-        {cast.embeds.map((embed: Embed, index: number) => (
-          <div key={index} className="mb-3">
-            <EmbedRenderer embed={embed} recastedCast={recastedCast ? <CastCard cast={recastedCast} handleLike={handleLike} handleRecast={handleRecast} handleReply={handleReply} /> : undefined} />
-          </div>
-        ))}
-        <div className="flex justify-between text-sm text-gray-500">
+        )}
+        {renderCastContent(cast)}
+        {recastedCast && renderCastContent(recastedCast, true)}
+        <div className="flex justify-between text-sm text-gray-500 mt-3">
           <Button variant="ghost" size="sm" onClick={() => handleLike(cast.hash)} className="flex items-center">
             <Heart size={18} className='text-red-500 hover:fill-red-500' />
             <span className="ml-1">{cast.reactions.likes_count}</span>
