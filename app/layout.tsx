@@ -4,7 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { NeynarProvider } from "@/components/NeynarProvider";
 import Navbar from "@/components/Navbar";
-import { FeedProvider } from "@/contexts/FeedContext";
+import Providers from "@/components/Providers";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -39,10 +39,10 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <Navbar />
-            <FeedProvider>
+            <Providers>
+              <Navbar />
               {children}
-            </FeedProvider>
+            </Providers>
           </ThemeProvider>
         </NeynarProvider>
       </body>
