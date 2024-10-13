@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Heart, Repeat, MessageCircle } from 'lucide-react';
 import { Cast, Embed } from '@/types/neynar';
 import EmbedRenderer from './EmbedRenderer';
+import Link from 'next/link';
 
 interface CastCardProps {
   cast: Cast;
@@ -45,12 +46,21 @@ const CastCard: React.FC<CastCardProps> = ({ cast, handleLike, handleRecast, han
           className="rounded-full mr-2"
         />
         <div>
-          <p className="font-semibold text-sm">{contentCast.author.display_name}</p>
-          <p className="text-muted-foreground text-xs">@{contentCast.author.username}</p>
+          <Link
+            href={`https://warpcast.com/${contentCast.author.username}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:underline"
+          >
+            <p className="font-semibold text-sm">{contentCast.author.display_name}</p>
+            <p className="text-muted-foreground text-xs">@{contentCast.author.username}</p>
+          </Link>
         </div>
-        <p className="ml-auto text-xs text-muted-foreground">
-          {new Date(contentCast.timestamp).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}
-        </p>
+        <div className="ml-auto flex items-center">
+          <p className="text-xs text-muted-foreground mr-2">
+            {new Date(contentCast.timestamp).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}
+          </p>
+        </div>
       </div>
       <p className="text-sm mb-2">{contentCast.text}</p>
       {contentCast.embeds.map((embed: Embed, index: number) => (
