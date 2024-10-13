@@ -74,14 +74,18 @@ const CastCard: React.FC<CastCardProps> = ({ cast, handleLike, handleRecast, han
   return (
     <Card className="overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
       <CardContent className="p-4">
-        {recastedCast && (
-          <div className="flex items-center text-sm text-muted-foreground mb-3">
-            <Repeat className="mr-1" size={14} />
-            {cast.author.display_name} recasted
-          </div>
+        {recastedCast ? (
+          <>
+            <div className="flex items-center text-sm text-muted-foreground mb-3">
+              <Repeat className="mr-1" size={14} />
+              {cast.author.display_name} recasted
+            </div>
+            {renderCastContent(cast)}
+            {renderCastContent(recastedCast, true)}
+          </>
+        ) : (
+          renderCastContent(cast)
         )}
-        {renderCastContent(recastedCast || cast)}
-        {recastedCast && renderCastContent(cast, true)}
         <div className="flex justify-between text-sm text-muted-foreground mt-3">
           <Button variant="ghost" size="sm" onClick={() => handleLike(cast.hash)} className="flex items-center">
             <Heart size={16} className={`${cast.viewer_context.liked ? 'fill-red-500' : ''} text-red-500`} />
