@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, Repeat, MessageCircle } from 'lucide-react';
@@ -12,6 +12,7 @@ import { useNeynarContext } from '@neynar/react';
 import ReplyModal from './ReplyModal';
 import { useRouter } from 'next/navigation';
 import RepliesSection from './RepliesSection';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface CastCardProps {
   cast: Cast;
@@ -19,33 +20,26 @@ interface CastCardProps {
 }
 
 const CastCard: React.FC<CastCardProps> = ({ cast, showRecast = true }) => {
-  const [recastedCast, setRecastedCast] = useState<Cast | null>(null);
-  const [isLiked, setIsLiked] = useState(cast.viewer_context?.liked || false);
-  const [isRecasted, setIsRecasted] = useState(cast.viewer_context?.recasted || false);
-  const [likesCount, setLikesCount] = useState(cast.reactions.likes.length);
-  const [recastsCount, setRecastsCount] = useState(cast.reactions.recasts.length);
   const { user } = useNeynarContext();
-  const [showReplies, setShowReplies] = useState(false);
-  const [isReplyModalOpen, setIsReplyModalOpen] = useState(false);
-
   const router = useRouter();
+  const queryClient = useQueryClient();
+
+  const [showReplies, setShowReplies] = React.useState(false);
+  const [isReplyModalOpen, setIsReplyModalOpen] = React.useState(false);
 
   const navigateToCastPage = () => {
     router.push(`/cast/${cast.hash}`);
   };
 
-  const handleReaction = async (type: 'like' | 'recast') => {
-    if (!user) return;
-
-    const endpoint = '/api/farcaster/reaction';
-    const method = isLiked ? 'DELETE' : 'POST';
-    
-    try {
+  const reactionMutation = useMutation({
+    mutationFn: async ({ type, action }: { type: 'like' | 'recast', action: 'add' | 'remove' }) => {
+      if (!user) throw new Error('User not authenticated');
+      const endpoint = '/api/farcaster/reaction';
+      const method = action === 'add' ? 'POST' : 'DELETE';
+      
       const response = await fetch(endpoint, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           signer_uuid: user.signer_uuid,
           reaction_type: type,
@@ -55,27 +49,42 @@ const CastCard: React.FC<CastCardProps> = ({ cast, showRecast = true }) => {
       });
 
       if (!response.ok) throw new Error('Failed to update reaction');
+      return { type, action };
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(['cast', cast.hash], (oldData: Cast | undefined) => {
+        if (!oldData) return oldData;
+        return {
+          ...oldData,
+          reactions: {
+            ...oldData.reactions,
+            [data.type === 'like' ? 'likes' : 'recasts']: 
+              data.action === 'add' 
+                ? [...oldData.reactions[data.type === 'like' ? 'likes' : 'recasts'], { fid: user?.fid }]
+                : oldData.reactions[data.type === 'like' ? 'likes' : 'recasts'].filter(r => r.fid !== user?.fid),
+          },
+          viewer_context: {
+            ...oldData.viewer_context,
+            [data.type === 'like' ? 'liked' : 'recasted']: data.action === 'add',
+          },
+        };
+      });
+    },
+  });
 
-      if (type === 'like') {
-        setIsLiked(!isLiked);
-        setLikesCount(prev => isLiked ? prev - 1 : prev + 1);
-      } else {
-        setIsRecasted(!isRecasted);
-        setRecastsCount(prev => isRecasted ? prev - 1 : prev + 1);
-      }
-    } catch (error) {
-      console.error(`Error updating ${type}:`, error);
-    }
+  const handleReaction = (type: 'like' | 'recast') => {
+    if (!user) return;
+    const isActive = type === 'like' ? cast.viewer_context?.liked : cast.viewer_context?.recasted;
+    reactionMutation.mutate({ type, action: isActive ? 'remove' : 'add' });
   };
-
-  const handleLikeClick = () => handleReaction('like');
-  const handleRecastClick = () => handleReaction('recast');
 
   const openReplyModal = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowReplies(true);
     setIsReplyModalOpen(true);
   };
+
+  const [recastedCast, setRecastedCast] = React.useState<Cast | null>(null);
 
   useEffect(() => {
     const fetchRecastedCast = async () => {
@@ -145,46 +154,46 @@ const CastCard: React.FC<CastCardProps> = ({ cast, showRecast = true }) => {
   );
 
   return (
-      <Card className="overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={navigateToCastPage}>
-        <CardContent className="p-4">
-          {recastedCast && showRecast ? (
-            <>
-              <div className="flex items-center text-sm text-muted-foreground mb-3">
-                <Repeat className="mr-1" size={14} />
-                {cast.author.display_name} recasted
-              </div>
-              {renderCastContent(cast)}
-              {renderCastContent(recastedCast, true, showRecast)}
-            </>
-          ) : (
-            renderCastContent(cast)
-          )}
-          <div className="flex justify-between text-sm text-muted-foreground mt-3">
-            <Button variant="ghost" size="sm" onClick={handleLikeClick} className="flex items-center">
-              <Heart size={16} className={`${isLiked ? 'fill-red-500' : ''} text-red-500`} />
-              <span className="ml-1">{likesCount}</span>
-            </Button>
-            <Button variant="ghost" size="sm" onClick={handleRecastClick} className="flex items-center">
-              <Repeat size={16} className={`${isRecasted ? 'fill-green-500' : ''}`} />
-              <span className="ml-1">{recastsCount}</span>
-            </Button>
-            <Button variant="ghost" size="sm" onClick={openReplyModal} className="flex items-center">
-              <MessageCircle size={16} />
-              <span className="ml-1">{cast.replies.count}</span>
-            </Button>
-          </div>
-          {showReplies && <RepliesSection parentHash={cast.hash} repliesCount={cast.replies.count}/>}
-          {isReplyModalOpen && (
-            <ReplyModal
-              cast={cast}
-              onClose={() => {
-                setShowReplies(false);
-                setIsReplyModalOpen(false);
-              }}
-            />
-          )}
-        </CardContent>
-      </Card>
+    <Card className="overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={navigateToCastPage}>
+      <CardContent className="p-4">
+        {recastedCast && showRecast ? (
+          <>
+            <div className="flex items-center text-sm text-muted-foreground mb-3">
+              <Repeat className="mr-1" size={14} />
+              {cast.author.display_name} recasted
+            </div>
+            {renderCastContent(cast)}
+            {renderCastContent(recastedCast, true, showRecast)}
+          </>
+        ) : (
+          renderCastContent(cast)
+        )}
+        <div className="flex justify-between text-sm text-muted-foreground mt-3">
+          <Button variant="ghost" size="sm" onClick={() => handleReaction('like')} className="flex items-center">
+            <Heart size={16} className={`${cast.viewer_context?.liked ? 'fill-red-500' : ''} text-red-500`} />
+            <span className="ml-1">{cast.reactions.likes.length}</span>
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => handleReaction('recast')} className="flex items-center">
+            <Repeat size={16} className={`${cast.viewer_context?.recasted ? 'fill-green-500' : ''}`} />
+            <span className="ml-1">{cast.reactions.recasts.length}</span>
+          </Button>
+          <Button variant="ghost" size="sm" onClick={openReplyModal} className="flex items-center">
+            <MessageCircle size={16} />
+            <span className="ml-1">{cast.replies.count}</span>
+          </Button>
+        </div>
+        {showReplies && <RepliesSection parentHash={cast.hash} repliesCount={cast.replies.count}/>}
+        {isReplyModalOpen && (
+          <ReplyModal
+            cast={cast}
+            onClose={() => {
+              setShowReplies(false);
+              setIsReplyModalOpen(false);
+            }}
+          />
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
