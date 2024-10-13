@@ -1,21 +1,67 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, Repeat, MessageCircle } from 'lucide-react';
+import { Heart, Repeat, MessageCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { Cast } from '@/types/neynar';
 import EmbedRenderer from './EmbedRenderer';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { useNeynarContext } from '@neynar/react';
+import CommentSection from './CommentSection';
 
 interface CastCardProps {
   cast: Cast;
-  handleLike: (hash: string) => void;
-  handleRecast: (hash: string) => void;
-  handleReply: (hash: string) => void;
 }
 
-const CastCard: React.FC<CastCardProps> = ({ cast, handleLike, handleRecast, handleReply }) => {
+const CastCard: React.FC<CastCardProps> = ({ cast }) => {
   const [recastedCast, setRecastedCast] = useState<Cast | null>(null);
+  const [isLiked, setIsLiked] = useState(cast.viewer_context?.liked || false);
+  const [isRecasted, setIsRecasted] = useState(cast.viewer_context?.recasted || false);
+  const [likesCount, setLikesCount] = useState(cast.reactions.likes.length);
+  const [recastsCount, setRecastsCount] = useState(cast.reactions.recasts.length);
+  const { user } = useNeynarContext();
+  const [showComments, setShowComments] = useState(false);
+
+  const handleReaction = async (type: 'like' | 'recast') => {
+    if (!user) return;
+
+    const endpoint = '/api/farcaster/reaction';
+    const method = isLiked ? 'DELETE' : 'POST';
+    
+    try {
+      const response = await fetch(endpoint, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          signer_uuid: user.signer_uuid,
+          reaction_type: type,
+          target: cast.hash,
+          target_author_fid: cast.author.fid,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update reaction');
+
+      if (type === 'like') {
+        setIsLiked(!isLiked);
+        setLikesCount(prev => isLiked ? prev - 1 : prev + 1);
+      } else {
+        setIsRecasted(!isRecasted);
+        setRecastsCount(prev => isRecasted ? prev - 1 : prev + 1);
+      }
+    } catch (error) {
+      console.error(`Error updating ${type}:`, error);
+    }
+  };
+
+  const handleLikeClick = () => handleReaction('like');
+  const handleRecastClick = () => handleReaction('recast');
+
+  const toggleComments = () => {
+    setShowComments(!showComments);
+  };
 
   useEffect(() => {
     const fetchRecastedCast = async () => {
@@ -100,19 +146,25 @@ const CastCard: React.FC<CastCardProps> = ({ cast, handleLike, handleRecast, han
           renderCastContent(cast)
         )}
         <div className="flex justify-between text-sm text-muted-foreground mt-3">
-          <Button variant="ghost" size="sm" onClick={() => handleLike(cast.hash)} className="flex items-center">
-            <Heart size={16} className={`${cast.viewer_context.liked ? 'fill-red-500' : ''} text-red-500`} />
-            <span className="ml-1">{cast.reactions.likes_count}</span>
+          <Button variant="ghost" size="sm" onClick={handleLikeClick} className="flex items-center">
+            <Heart size={16} className={`${isLiked ? 'fill-red-500' : ''} text-red-500`} />
+            <span className="ml-1">{likesCount}</span>
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => handleRecast(cast.hash)} className="flex items-center">
-            <Repeat size={16} className={`${cast.viewer_context.recasted ? 'fill-green-500' : ''} text-green-500`} />
-            <span className="ml-1">{cast.reactions.recasts_count}</span>
+          <Button variant="ghost" size="sm" onClick={handleRecastClick} className="flex items-center">
+            <Repeat size={16} className={`${isRecasted ? 'fill-green-500' : ''}`} />
+            <span className="ml-1">{recastsCount}</span>
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => handleReply(cast.hash)} className="flex items-center">
-            <MessageCircle size={16} />
+          
+            <Button variant="ghost" size="sm" onClick={toggleComments} className="flex items-center">
+              <MessageCircle size={16} />
             <span className="ml-1">{cast.replies.count}</span>
+            {cast.replies.count > 0 && (
+              showComments ? <ChevronUp size={16} className="ml-1" /> : <ChevronDown size={16} className="ml-1" />
+            )}
           </Button>
+        
         </div>
+        {showComments && <CommentSection parentHash={cast.hash} repliesCount={cast.replies.count} />}
       </CardContent>
     </Card>
   );

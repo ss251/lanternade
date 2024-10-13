@@ -43,18 +43,6 @@ export default function Feed() {
     }
   };
 
-  const handleLike = async (hash: string) => {
-    console.log('Like', hash);
-  };
-
-  const handleRecast = async (hash: string) => {
-    console.log('Recast', hash);
-  };
-
-  const handleReply = async (hash: string) => {
-    console.log('Reply', hash);
-  };
-
   const observer = useRef<IntersectionObserver | null>(null);
   const lastCastElementRef = useCallback((node: HTMLDivElement | null) => {
     if (loading) return;
@@ -83,9 +71,6 @@ export default function Feed() {
             >
               <CastCard
                 cast={cast}
-                handleLike={handleLike}
-                handleRecast={handleRecast}
-                handleReply={handleReply}
               />
             </div>
           ))
