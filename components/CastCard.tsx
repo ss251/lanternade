@@ -35,26 +35,26 @@ const CastCard: React.FC<CastCardProps> = ({ cast, handleLike, handleRecast, han
   }, [cast]);
 
   const renderCastContent = (contentCast: Cast, isRecast: boolean = false) => (
-    <div className={isRecast ? "border-l-2 border-primary pl-3 mt-3" : ""}>
-      <div className="flex items-center mb-3">
+    <div className={`${isRecast ? "dark:bg-secondary/50 bg-secondary/10 rounded-lg p-3 mt-3" : ""}`}>
+      <div className="flex items-center mb-2">
         <Image
           src={contentCast.author.pfp_url}
           alt={contentCast.author.display_name}
-          width={40}
-          height={40}
-          className="rounded-full mr-3"
+          width={32}
+          height={32}
+          className="rounded-full mr-2"
         />
         <div>
           <p className="font-semibold text-sm">{contentCast.author.display_name}</p>
-          <p className="text-gray-500 text-xs">@{contentCast.author.username}</p>
+          <p className="text-muted-foreground text-xs">@{contentCast.author.username}</p>
         </div>
-        <p className="ml-auto text-xs text-gray-400">
-          {new Date(contentCast.timestamp).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+        <p className="ml-auto text-xs text-muted-foreground">
+          {new Date(contentCast.timestamp).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}
         </p>
       </div>
-      <p className="text-sm mb-3">{contentCast.text}</p>
+      <p className="text-sm mb-2">{contentCast.text}</p>
       {contentCast.embeds.map((embed: Embed, index: number) => (
-        <div key={index} className="mb-3">
+        <div key={index} className="mb-2">
           <EmbedRenderer embed={embed} />
         </div>
       ))}
@@ -65,24 +65,24 @@ const CastCard: React.FC<CastCardProps> = ({ cast, handleLike, handleRecast, han
     <Card className="overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
       <CardContent className="p-4">
         {recastedCast && (
-          <div className="text-sm text-gray-500 mb-2">
-            <Repeat className="inline-block mr-1" size={16} />
+          <div className="flex items-center text-sm text-muted-foreground mb-3">
+            <Repeat className="mr-1" size={14} />
             {cast.author.display_name} recasted
           </div>
         )}
-        {renderCastContent(cast)}
-        {recastedCast && renderCastContent(recastedCast, true)}
-        <div className="flex justify-between text-sm text-gray-500 mt-3">
+        {renderCastContent(recastedCast || cast)}
+        {recastedCast && renderCastContent(cast, true)}
+        <div className="flex justify-between text-sm text-muted-foreground mt-3">
           <Button variant="ghost" size="sm" onClick={() => handleLike(cast.hash)} className="flex items-center">
-            <Heart size={18} className='text-red-500 hover:fill-red-500' />
+            <Heart size={16} className={`${cast.viewer_context.liked ? 'fill-red-500' : ''} text-red-500`} />
             <span className="ml-1">{cast.reactions.likes_count}</span>
           </Button>
           <Button variant="ghost" size="sm" onClick={() => handleRecast(cast.hash)} className="flex items-center">
-            <Repeat size={18} className='text-green-500 hover:text-green-500' />
+            <Repeat size={16} className={`${cast.viewer_context.recasted ? 'fill-green-500' : ''} text-green-500`} />
             <span className="ml-1">{cast.reactions.recasts_count}</span>
           </Button>
           <Button variant="ghost" size="sm" onClick={() => handleReply(cast.hash)} className="flex items-center">
-            <MessageCircle size={18} />
+            <MessageCircle size={16} />
             <span className="ml-1">{cast.replies.count}</span>
           </Button>
         </div>
