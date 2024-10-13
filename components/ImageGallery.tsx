@@ -27,8 +27,6 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
               alt="Embedded image"
               width={images[0].width || 500}
               height={images[0].height || 300}
-              layout="responsive"
-              objectFit="cover"
               onClick={() => {
                 setOpenImage(images[0].url);
                 setCurrentIndex(0);
@@ -46,8 +44,6 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
                   alt={`Embedded image ${index + 1}`}
                   width={image.width || 250}
                   height={image.height || 250}
-                  layout="responsive"
-                  objectFit="cover"
                   onClick={() => {
                     setOpenImage(image.url);
                     setCurrentIndex(index);
@@ -71,8 +67,6 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
                   alt={`Embedded image ${index + 1}`}
                   width={image.width || 250}
                   height={image.height || 250}
-                  layout="responsive"
-                  objectFit="cover"
                   onClick={() => {
                     setOpenImage(image.url);
                     setCurrentIndex(index);
@@ -96,10 +90,8 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
             <Image
               src={images[currentIndex].url}
               alt="Full size image"
-              layout="responsive"
               width={1000}
               height={1000}
-              objectFit="contain"
             />
             {images.length > 1 && (
               <>
