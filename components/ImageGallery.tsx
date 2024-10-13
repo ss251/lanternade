@@ -98,7 +98,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
               {images[currentIndex].url}
             </DialogDescription>
           </VisuallyHidden>
-          <div className="relative h-[80vh]">
+          <div className="relative max-h-[80vh]">
             <Image
               src={images[currentIndex].url}
               alt="Full size image"
