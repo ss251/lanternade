@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { Heart, Repeat, MessageCircle } from 'lucide-react';
-import { Cast, Embed } from '@/types/neynar';
+import { Cast } from '@/types/neynar';
 import EmbedRenderer from './EmbedRenderer';
 import Link from 'next/link';
 
@@ -63,11 +63,11 @@ const CastCard: React.FC<CastCardProps> = ({ cast, handleLike, handleRecast, han
         </div>
       </div>
       <p className="text-sm mb-2">{contentCast.text}</p>
-      {contentCast.embeds.map((embed: Embed, index: number) => (
-        <div key={index} className="mb-2">
-          <EmbedRenderer embed={embed} />
+      {contentCast.embeds.length > 0 && (
+        <div className="mb-2">
+          <EmbedRenderer embeds={contentCast.embeds} />
         </div>
-      ))}
+      )}
     </div>
   );
 
