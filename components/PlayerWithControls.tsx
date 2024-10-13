@@ -12,7 +12,7 @@ import {
   PlayIcon,
   SettingsIcon,
   Volume2Icon,
-  EllipsisIcon,
+  Loader2Icon,
   Maximize,
   Minimize,
 } from "lucide-react";
@@ -20,6 +20,10 @@ import { useTheme } from "next-themes";
 
 export function PlayerWithControls({ src }: { src: Src[] }) {
   const { theme } = useTheme();
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  const handleLoadStart = () => setIsLoading(true);
+  const handleLoadedData = () => setIsLoading(false);
 
   if (!src || src.length === 0) {
     return (
@@ -32,51 +36,44 @@ export function PlayerWithControls({ src }: { src: Src[] }) {
 
   return (
     <Player.Root src={src} autoPlay>
-      <Player.Container className="h-full w-full overflow-hidden bg-background outline-none transition">
+      <Player.Container className="relative aspect-video w-full overflow-hidden rounded-lg bg-black shadow-lg">
         <Player.Video
           title="Video"
-          className={cn("h-full w-full transition")}
+          className={cn("h-full w-full object-contain")}
+          onLoadStart={handleLoadStart}
+          onLoadedData={handleLoadedData}
         />
 
-        <Player.LoadingIndicator className="w-full relative h-full bg-background/50 backdrop-blur">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-            <EllipsisIcon className="w-8 h-8 animate-spin text-primary" />
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+            <Loader2Icon className="h-12 w-12 animate-spin text-primary" />
           </div>
-          <PlayerLoading />
-        </Player.LoadingIndicator>
-
-        <Player.ErrorIndicator
-          matcher="all"
-          className="absolute inset-0 flex flex-col items-center justify-center bg-background/40 backdrop-blur-lg"
-        >
-          <div className="flex flex-col gap-5">
-            <div className="flex flex-col gap-1">
-              <div className="text-lg sm:text-2xl font-bold text-foreground">
-                Error Occurred
-              </div>
-              <div className="text-xs sm:text-sm text-muted-foreground">
-                Failed to load the video. Please try again later.
-              </div>
-            </div>
-            <EllipsisIcon className="w-6 h-6 md:w-8 md:h-8 mx-auto animate-spin text-primary" />
-          </div>
-        </Player.ErrorIndicator>
+        )}
 
         <Player.Controls 
-          className={`gap-1 px-3 py-2 flex-col-reverse flex ${
+          className={cn(
+            "absolute bottom-0 left-0 right-0 flex flex-col-reverse gap-2 p-3 transition-opacity duration-300",
             theme === 'dark'
-              ? 'bg-gradient-to-b from-background/5 via-background/30 to-background/60'
-              : 'bg-gradient-to-b from-background/0 via-background/5 to-background/10'
-          }`}
+              ? 'bg-gradient-to-t from-black via-black/80 to-transparent'
+              : 'bg-gradient-to-t from-white/90 via-white/60 to-transparent'
+          )}
         >
-          <div className="flex justify-between gap-4">
-            <div className="flex flex-1 items-center gap-3">
-              <Player.PlayPauseTrigger className="w-6 h-6 hover:scale-110 transition flex-shrink-0 text-foreground hover:text-primary">
+          <Player.Seek className="group relative flex w-full items-center">
+            <Player.SeekBuffer className="absolute h-1 w-full rounded-full bg-white/30" />
+            <Player.Track className="absolute h-1 w-full rounded-full bg-white/60">
+              <Player.Range className="absolute h-full rounded-full bg-primary" />
+            </Player.Track>
+            <Player.Thumb className="block h-3 w-3 rounded-full bg-primary shadow-md transition-transform group-hover:scale-125" />
+          </Player.Seek>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Player.PlayPauseTrigger className="rounded-full p-1.5 text-white hover:bg-white/10 hover:text-primary transition">
                 <Player.PlayingIndicator asChild matcher={false}>
-                  <PlayIcon className="w-full h-full" />
+                  <PlayIcon className="h-6 w-6" />
                 </Player.PlayingIndicator>
-                <Player.PlayingIndicator asChild matcher={true}>
-                  <PauseIcon className="w-full h-full" />
+                <Player.PlayingIndicator asChild>
+                  <PauseIcon className="h-6 w-6" />
                 </Player.PlayingIndicator>
               </Player.PlayPauseTrigger>
 
@@ -93,44 +90,40 @@ export function PlayerWithControls({ src }: { src: Src[] }) {
                 <Player.Time className="text-sm tabular-nums select-none" />
               </Player.LiveIndicator>
 
-              <Player.MuteTrigger className="w-6 h-6 hover:scale-110 transition flex-shrink-0 text-foreground hover:text-primary">
-                <Player.VolumeIndicator asChild matcher={true}>
-                  <VolumeXIcon className="w-full h-full" />
-                </Player.VolumeIndicator>
+              <Player.MuteTrigger className="rounded-full p-1.5 text-white hover:bg-white/10 hover:text-primary transition">
                 <Player.VolumeIndicator asChild matcher={false}>
-                  <Volume2Icon className="w-full h-full" />
+                  <VolumeXIcon className="h-6 w-6" />
+                </Player.VolumeIndicator>
+                <Player.VolumeIndicator asChild matcher={true}>
+                  <Volume2Icon className="h-6 w-6" />
                 </Player.VolumeIndicator>
               </Player.MuteTrigger>
 
-              <Player.Volume className="relative mr-1 flex-1 group flex cursor-pointer items-center select-none touch-none max-w-[120px] h-5">
-                <Player.Track className="bg-muted relative grow rounded-full transition h-[2px] group-hover:h-[3px]">
-                  <Player.Range className="absolute bg-primary rounded-full h-full" />
+              <Player.Volume className="group relative flex w-20 items-center">
+                <Player.Track className="relative h-1 w-full rounded-full bg-white/60">
+                  <Player.Range className="absolute h-full rounded-full bg-primary" />
                 </Player.Track>
-                <Player.Thumb className="block transition group-hover:scale-110 w-3 h-3 bg-primary rounded-full" />
+                <Player.Thumb className="block h-3 w-3 rounded-full bg-primary shadow-md transition-transform group-hover:scale-125" />
               </Player.Volume>
+
+              <Player.Time className="text-sm tabular-nums text-white" />
             </div>
-            <div className="flex justify-end items-center gap-2.5">
-              <Settings className="w-6 h-6 transition flex-shrink-0 text-foreground hover:text-primary" />
-              <Player.PictureInPictureTrigger className="w-6 h-6 hover:scale-110 transition flex-shrink-0 text-foreground hover:text-primary">
-                <PictureInPictureIcon className="w-full h-full" />
+
+            <div className="flex items-center gap-3">
+              <Settings className="rounded-full p-1.5 text-white hover:bg-white/10 hover:text-primary transition" />
+              <Player.PictureInPictureTrigger className="rounded-full p-1.5 text-white hover:bg-white/10 hover:text-primary transition">
+                <PictureInPictureIcon className="h-6 w-6" />
               </Player.PictureInPictureTrigger>
-              <Player.FullscreenTrigger className="w-6 h-6 hover:scale-110 transition flex-shrink-0 text-foreground hover:text-primary">
+              <Player.FullscreenTrigger className="rounded-full p-1.5 text-white hover:bg-white/10 hover:text-primary transition">
                 <Player.FullscreenIndicator asChild matcher={false}>
-                  <Maximize className="w-full h-full" />
+                  <Maximize className="h-6 w-6" />
                 </Player.FullscreenIndicator>
-                <Player.FullscreenIndicator asChild matcher={true}>
-                  <Minimize className="w-full h-full" />
+                <Player.FullscreenIndicator asChild>
+                  <Minimize className="h-6 w-6" />
                 </Player.FullscreenIndicator>
               </Player.FullscreenTrigger>
             </div>
           </div>
-          <Player.Seek className="relative group flex cursor-pointer items-center select-none touch-none w-full h-5">
-            <Player.Track className="bg-muted relative grow rounded-full transition h-[2px] group-hover:h-[3px]">
-              <Player.SeekBuffer className="absolute bg-muted-foreground transition duration-1000 rounded-full h-full" />
-              <Player.Range className="absolute bg-primary rounded-full h-full" />
-            </Player.Track>
-            <Player.Thumb className="block group-hover:scale-110 w-3 h-3 bg-primary transition rounded-full" />
-          </Player.Seek>
         </Player.Controls>
       </Player.Container>
     </Player.Root>
@@ -142,7 +135,7 @@ function Settings({ className }: { className?: string }) {
     <Popover.Root>
       <Popover.Trigger asChild>
         <button className={className} aria-label="Playback settings">
-          <SettingsIcon />
+          <SettingsIcon className="h-6 w-6" />
         </button>
       </Popover.Trigger>
       <Popover.Portal>

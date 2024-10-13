@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 import { Heart, Repeat, MessageCircle } from 'lucide-react';
-import ReactPlayer from 'react-player';
 import { Cast, Embed } from '@/types/neynar';
 import { Skeleton } from "@/components/ui/skeleton";
+import { PlayerWithControls } from '@/components/PlayerWithControls';
+import { getSrc } from '@livepeer/react/external';
 
 export default function Feed() {
     const [feed, setFeed] = useState<Cast[]>([]);
@@ -84,13 +85,8 @@ export default function Feed() {
         );
       } else if (embed.metadata?.video) {
         return (
-          <ReactPlayer
-            url={embed.url}
-            controls
-            width="100%"
-            height="auto"
-            light
-            playsinline
+          <PlayerWithControls
+            src={getSrc(embed.url) || []} 
           />
         );
       }
