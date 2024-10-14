@@ -199,12 +199,19 @@ export function AICreatorStudio() {
 
           {/* Desktop View */}
           <div className="hidden md:block">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-              <TabsList className="grid grid-cols-4 gap-4">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-4 mb-8">
                 {tabOptions.map((option) => (
                   <Tooltip key={option.value}>
                     <TooltipTrigger asChild>
-                      <TabsTrigger value={option.value} className="py-2 px-4">
+                      <TabsTrigger 
+                        value={option.value}
+                        className={`mb-1 px-4 transition-all ${
+                          activeTab === option.value 
+                            ? "bg-primary text-primary-foreground" 
+                            : "hover:bg-muted"
+                        }`}
+                      >
                         {option.label}
                       </TabsTrigger>
                     </TooltipTrigger>
