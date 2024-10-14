@@ -1,16 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { SunIcon, MoonIcon } from "lucide-react";
+import { SunIcon, MoonIcon, ExternalLink } from "lucide-react";
 import { useTheme } from "next-themes";
 import { NeynarAuthButton, useNeynarContext } from "@neynar/react";
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { theme, setTheme } = useTheme();
-  const { user } = useNeynarContext();
+  const { user, logoutUser, isAuthenticated } = useNeynarContext();
+
+  const navItems = [
+    { href: "/feed", label: "Feed" },
+    { href: "/creator", label: "Creator" },
+    { href: "/profile", label: "Profile" },
+  ];
+
+  const handleLogout = () => {
+    logoutUser();
+    router.push('/');
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background border-b">
@@ -76,15 +96,15 @@ function Navbar() {
             </span>
           </Link>
 
-          <div className="flex items-center space-x-6">
-            <div className="hidden md:flex space-x-4">
-              <NavLink href="/feed" active={pathname === "/feed"}>Feed</NavLink>
-              <NavLink href="/creator" active={pathname === "/creator"}>Creator</NavLink>
-              {user && (
-                <NavLink href="/profile" active={pathname === "/profile"}>Profile</NavLink>
-              )}
-            </div>
+          <div className="hidden md:flex items-center space-x-6">
+            {navItems.map((item) => (
+              <NavLink key={item.href} href={item.href} active={pathname === item.href}>
+                {item.label}
+              </NavLink>
+            ))}
+          </div>
 
+          <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
               size="icon"
@@ -96,24 +116,54 @@ function Navbar() {
               <span className="sr-only">Toggle theme</span>
             </Button>
 
-            <NeynarAuthButton 
-              customLogoUrl="https://raw.githubusercontent.com/vrypan/farcaster-brand/refs/heads/main/icons/icon-transparent/transparent-white.png"
-              className="!bg-farcaster !text-white !rounded-none !py-1 !h-10"
-              modalStyle={{
-                backgroundColor: 'hsl(var(--card))',
-                color: 'hsl(var(--card-foreground)) !important',
-                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-                borderRadius: '0',
-              }}
-              modalButtonStyle={{
-                backgroundColor: 'hsl(var(--farcaster))',
-                color: 'hsl(var(--primary-foreground)) !important',
-                padding: '0.5rem 1rem',
-                borderRadius: '0',
-                border: 'none',
-              }}
-              label="Sign In"
-            />
+            {isAuthenticated && user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Avatar className="cursor-pointer">
+                    <AvatarImage src={user.pfp_url} alt={user.display_name} />
+                    <AvatarFallback>{user.display_name?.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <div className="md:hidden">
+                    {navItems.map((item) => (
+                      <DropdownMenuItem key={item.href} asChild className="cursor-pointer">
+                        <Link href={item.href}>{item.label}</Link>
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator className="border-b-primary"/>
+                  </div>
+                  <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link href={`https://warpcast.com/${user.username}`} target="_blank" rel="noopener noreferrer" className="flex items-center">
+                      Warpcast
+                      <ExternalLink className="ml-2 h-4 w-4" />
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={handleLogout} className="cursor-pointer">
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <NeynarAuthButton 
+                customLogoUrl="https://raw.githubusercontent.com/vrypan/farcaster-brand/refs/heads/main/icons/icon-transparent/transparent-white.png"
+                className="!bg-farcaster !text-white !rounded-none !py-1 !h-10"
+                modalStyle={{
+                  backgroundColor: 'hsl(var(--card))',
+                  color: 'hsl(var(--card-foreground)) !important',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                  borderRadius: '0',
+                }}
+                modalButtonStyle={{
+                  backgroundColor: 'hsl(var(--farcaster))',
+                  color: 'hsl(var(--primary-foreground)) !important',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '0',
+                  border: 'none',
+                }}
+                label="Sign In"
+              />
+            )}
           </div>
         </div>
       </div>
