@@ -62,6 +62,8 @@ export type Embed = {
 export type Reaction = {
     fid: number;
     fname: string;
+    display_name: string;
+    pfp_url: string;
   };
   
 export type Cast = {
@@ -99,3 +101,9 @@ export type Cast = {
       recasted: boolean;
     };
   };
+
+export type ReactionResponse = {
+  hash: string;
+  target: string;
+  type: 'like' | 'recast';
+};
