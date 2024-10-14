@@ -24,7 +24,7 @@ function Navbar() {
   const navItems = [
     { href: "/feed", label: "Feed" },
     { href: "/creator", label: "Creator" },
-    { href: "/profile", label: "Profile" },
+    // { href: "/profile", label: "Profile" },
   ];
 
   const handleLogout = () => {
