@@ -1,0 +1,7 @@
+{
+    "functions": {
+      "api/ai/image-to-video/*.ts": {
+      "maxDuration": 60
+    }
+  }
+}
