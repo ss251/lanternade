@@ -27,8 +27,11 @@ const CastCard: React.FC<CastCardProps> = ({ cast, showRecast = true }) => {
   const [showReplies, setShowReplies] = React.useState(false);
   const [isReplyModalOpen, setIsReplyModalOpen] = React.useState(false);
 
-  const navigateToCastPage = () => {
-    router.push(`/cast/${cast.hash}`);
+  const navigateToCastPage = (e: React.MouseEvent) => {
+    // Only navigate if the click didn't originate from the reply modal
+    if (!(e.target as HTMLElement).closest('.reply-modal')) {
+      router.push(`/cast/${cast.hash}`);
+    }
   };
 
   const reactionMutation = useMutation({
@@ -82,6 +85,12 @@ const CastCard: React.FC<CastCardProps> = ({ cast, showRecast = true }) => {
     e.stopPropagation();
     setShowReplies(true);
     setIsReplyModalOpen(true);
+  };
+
+  const closeReplyModal = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowReplies(false);
+    setIsReplyModalOpen(false);
   };
 
   const [recastedCast, setRecastedCast] = React.useState<Cast | null>(null);
@@ -184,13 +193,12 @@ const CastCard: React.FC<CastCardProps> = ({ cast, showRecast = true }) => {
         </div>
         {showReplies && <RepliesSection parentHash={cast.hash} repliesCount={cast.replies.count}/>}
         {isReplyModalOpen && (
-          <ReplyModal
-            cast={cast}
-            onClose={() => {
-              setShowReplies(false);
-              setIsReplyModalOpen(false);
-            }}
-          />
+          <div className="reply-modal" onClick={(e) => e.stopPropagation()}>
+            <ReplyModal
+              cast={cast}
+              onClose={closeReplyModal}
+            />
+          </div>
         )}
       </CardContent>
     </Card>

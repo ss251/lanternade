@@ -7,17 +7,21 @@ import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 interface ReplyModalProps {
   cast: Cast;
-  onClose: () => void;
+  onClose: (e: React.MouseEvent<Element, MouseEvent>) => void;
 }
 
 const ReplyModal: React.FC<ReplyModalProps> = ({ cast, onClose }) => {
+  const handleClose = () => {
+    onClose(new MouseEvent('click') as unknown as React.MouseEvent<Element, MouseEvent>);
+  };
+
   return (
-    <Dialog open={true} onOpenChange={onClose}>
+    <Dialog open={true} onOpenChange={handleClose}>
       <DialogContent className="max-w-[750px] max-h-[90vh]">
         <VisuallyHidden>
           <DialogHeader>
             <DialogTitle>Replies</DialogTitle>
-        </DialogHeader>
+          </DialogHeader>
         </VisuallyHidden>
         <div className="mt-4">
           <CastCard cast={cast} showRecast={false}/>
