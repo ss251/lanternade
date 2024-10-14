@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Livestream } from '@/types/livepeer';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useRouter } from 'next/navigation';
 import { Share2, Twitter, Send, Copy, Check } from 'lucide-react';
@@ -111,7 +110,6 @@ export default function CreateLivestream() {
         <CardContent>
           <div className="grid w-full items-center gap-4">
             <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="streamName">Stream Name</Label>
               <Input
                 id="streamName"
                 placeholder="Enter stream name"

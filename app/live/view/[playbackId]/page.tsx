@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { PlayerWithControls } from '@/components/PlayerWithControls';
 import { Src } from "@livepeer/react";
+import { Card } from "@/components/ui/card";
 
 export default function ViewLivestream({ params }: { params: { playbackId: string } }) {
   const { playbackId } = params;
@@ -26,13 +27,13 @@ export default function ViewLivestream({ params }: { params: { playbackId: strin
   }, [playbackId]);
 
   return (
-    <div className="max-w-3xl mx-auto mt-24 p-6 rounded-lg dark:bg-secondary bg-white shadow-md">
+    <Card className="max-w-3xl mx-auto mt-20 p-6 px-6 rounded-lg dark:bg-secondary bg-white shadow-md">
       <h1 className="text-2xl font-bold mb-4">View Livestream</h1>
       {src.length > 0 ? (
         <PlayerWithControls src={src} />
       ) : (
         <p>Loading stream...</p>
       )}
-    </div>
+    </Card>
   );
 }
