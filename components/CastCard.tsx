@@ -75,7 +75,8 @@ const CastCard: React.FC<CastCardProps> = ({ cast, showRecast = true }) => {
     },
   });
 
-  const handleReaction = (type: 'like' | 'recast') => {
+  const handleReaction = (e: React.MouseEvent, type: 'like' | 'recast') => {
+    e.stopPropagation(); // Prevent the event from bubbling up
     if (!user) return;
     const isActive = type === 'like' ? cast.viewer_context?.liked : cast.viewer_context?.recasted;
     reactionMutation.mutate({ type, action: isActive ? 'remove' : 'add' });
@@ -178,11 +179,11 @@ const CastCard: React.FC<CastCardProps> = ({ cast, showRecast = true }) => {
           renderCastContent(cast)
         )}
         <div className="flex justify-between text-sm text-muted-foreground mt-3">
-          <Button variant="ghost" size="sm" onClick={() => handleReaction('like')} className="flex items-center">
+          <Button variant="ghost" size="sm" onClick={(e) => handleReaction(e, 'like')} className="flex items-center">
             <Heart size={16} className={`${cast.viewer_context?.liked ? 'fill-red-500' : ''} text-red-500`} />
             <span className="ml-1">{cast.reactions.likes.length}</span>
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => handleReaction('recast')} className="flex items-center">
+          <Button variant="ghost" size="sm" onClick={(e) => handleReaction(e, 'recast')} className="flex items-center">
             <Repeat size={16} className={`${cast.viewer_context?.recasted ? 'fill-green-500' : ''}`} />
             <span className="ml-1">{cast.reactions.recasts.length}</span>
           </Button>
