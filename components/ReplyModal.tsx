@@ -17,13 +17,13 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ cast, onClose }) => {
 
   return (
     <Dialog open={true} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[750px] max-h-[90vh]">
+      <DialogContent className="max-w-[750px] max-h-[80vh]">
         <VisuallyHidden>
           <DialogHeader>
             <DialogTitle>Replies</DialogTitle>
           </DialogHeader>
         </VisuallyHidden>
-        <div className="mt-4">
+        <div className="mt-4 max-h-[50vh] overflow-y-auto">
           <CastCard cast={cast} showRecast={false}/>
         </div>
         <div className="mt-4">

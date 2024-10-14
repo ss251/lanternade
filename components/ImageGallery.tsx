@@ -29,7 +29,8 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
               width={images[0].width}
               height={images[0].height}
               style={{ width: '100%', height: 'auto' }}
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 setOpenImage(images[0].url);
                 setCurrentIndex(0);
               }}
@@ -47,7 +48,8 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
                   width={image.width}
                   height={image.height}
                   style={{ width: '100%', height: 'auto' }}
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setOpenImage(image.url);
                     setCurrentIndex(index);
                   }}
@@ -88,7 +90,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
   };
 
   return (
-    <>
+    <div onClick={(e) => e.stopPropagation()}>
       {renderThumbnails()}
       <Dialog open={!!openImage} onOpenChange={() => setOpenImage(null)}>
         <DialogContent className="max-w-4xl p-0" {...handlers}>
@@ -125,7 +127,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
           </div>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 };
 

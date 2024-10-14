@@ -180,7 +180,7 @@ const CastCard: React.FC<CastCardProps> = ({ cast: initialCast, showRecast = tru
         ) : (
           renderCastContent(cast)
         )}
-        <div className="flex justify-between text-sm text-muted-foreground mt-3">
+        <div className="cast-actions flex justify-between text-sm text-muted-foreground mt-3">
           <Button variant="ghost" size="sm" onClick={(e) => handleReaction(e, 'like')} className="flex items-center">
             <Heart size={16} className={`${cast.viewer_context?.liked ? 'fill-red-500' : ''} text-red-500`} />
             <span className="ml-1">{cast.reactions.likes_count}</span>
