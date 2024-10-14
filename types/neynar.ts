@@ -30,37 +30,50 @@ export type User = {
   };
   
 export type Embed = {
-    url?: string;
-    cast_id?: {
-      fid: number;
-      hash: string;
+  url: string;
+  cast_id?: {
+    fid: number;
+    hash: string;
+  };
+  metadata?: {
+    content_type?: string;
+    content_length?: number | null;
+    _status?: string;
+    image?: {
+      width_px?: number;
+      height_px?: number;
     };
-    metadata?: {
-      content_type: string;
-      content_length?: number;
-      _status: string;
-      image?: {
-        width_px: number;
-        height_px: number;
-      };
-      video?: {
-        streams: {
-          codec_name: string;
-          height_px: number;
-          width_px: number;
-        }[];
-        duration_s: number;
-      };
-      html?: {
-        ogImage?: { url: string; width?: number; height?: number }[];
-        ogTitle?: string;
-        ogDescription?: string;
-        ogUrl?: string;
-        ogSiteName?: string;
-      };
+    video?: {
+      streams?: {
+        codec_name?: string;
+        height_px?: number;
+        width_px?: number;
+      }[];
+      duration_s?: number;
+    };
+    html?: {
+      ogUrl?: string;
+      charset?: string;
+      favicon?: string;
+      ogTitle?: string;
+      ogLocale?: string;
+      ogDescription?: string;
+      ogSiteName?: string;
+      ogImage?: {
+        url: string;
+        width?: string;
+        height?: string;
+      }[];
+      twitterCard?: string;
+      twitterImage?: {
+        url: string;
+        width?: string;
+        height?: string;
+      }[];
     };
   };
-  
+};
+
 export type Reaction = {
     fid: number;
     fname: string;
@@ -102,10 +115,27 @@ export type Cast = {
       liked: boolean;
       recasted: boolean;
     };
-  };
+    frames?: Frame[];
+};
 
 export type ReactionResponse = {
   hash: string;
   target: string;
   type: 'like' | 'recast';
+};
+
+export type Frame = {
+  version: string;
+  title: string;
+  image: string;
+  image_aspect_ratio: string;
+  buttons: {
+    index: number;
+    title: string;
+    action_type: string;
+    target: string;
+  }[];
+  input: Record<string, unknown>;
+  state: Record<string, unknown>;
+  frames_url: string;
 };

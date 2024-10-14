@@ -160,7 +160,7 @@ const CastCard: React.FC<CastCardProps> = ({ cast: initialCast, showRecast = tru
       <p className="text-sm mb-2">{contentCast.text}</p>
       {contentCast.embeds.length > 0 && (
         <div className="mb-2">
-          <EmbedRenderer embeds={contentCast.embeds} />
+          <EmbedRenderer embeds={contentCast.embeds} frames={contentCast.frames} />
         </div>
       )}
     </div>
