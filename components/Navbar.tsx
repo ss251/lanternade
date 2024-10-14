@@ -14,12 +14,15 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { useState, MouseEvent, useRef } from "react";
 
 function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const { user, logoutUser, isAuthenticated } = useNeynarContext();
+  const [expandedItem, setExpandedItem] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const navItems = [
     { href: "/feed", label: "Feed" },
@@ -39,6 +42,32 @@ function Navbar() {
   const handleLogout = () => {
     logoutUser();
     router.push('/');
+  };
+
+  const handleItemClick = (e: MouseEvent | React.KeyboardEvent | Event, item: typeof navItems[0]) => {
+    if (item.dropdown) {
+      e.preventDefault();
+      setExpandedItem(expandedItem === item.href ? null : item.href);
+    } else {
+      // Close dropdown after a short delay to allow for navigation
+      setTimeout(() => {
+        if (dropdownRef.current) {
+          const closeEvent = new Event('closeDropdown');
+          dropdownRef.current.dispatchEvent(closeEvent);
+        }
+      }, 100);
+    }
+  };
+
+  const handleLinkClick = (href: string) => {
+    router.push(href);
+    // Close dropdown after a short delay
+    setTimeout(() => {
+      if (dropdownRef.current) {
+        const closeEvent = new Event('closeDropdown');
+        dropdownRef.current.dispatchEvent(closeEvent);
+      }
+    }, 100);
   };
 
   return (
@@ -154,12 +183,43 @@ function Navbar() {
                     <AvatarFallback>{user.display_name?.charAt(0)}</AvatarFallback>
                   </Avatar>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" ref={dropdownRef}>
                   <div className="md:hidden">
                     {navItems.map((item) => (
-                      <DropdownMenuItem key={item.href} asChild className="cursor-pointer">
-                        <Link href={item.href}>{item.label}</Link>
-                      </DropdownMenuItem>
+                      <div key={item.href}>
+                        <DropdownMenuItem 
+                          className="cursor-pointer"
+                          onSelect={(e) => handleItemClick(e as Event, item)}
+                        >
+                          {item.dropdown ? (
+                            <span className="flex items-center">
+                              {item.icon}
+                              <span className="ml-2">{item.label}</span>
+                            </span>
+                          ) : (
+                            <span 
+                              className="flex items-center w-full"
+                              onClick={() => handleLinkClick(item.href)}
+                            >
+                              {item.icon}
+                              <span className="ml-2">{item.label}</span>
+                            </span>
+                          )}
+                        </DropdownMenuItem>
+                        {item.dropdown && expandedItem === item.href && (
+                          <div className="pl-4 py-1">
+                            {item.dropdown.map((subItem) => (
+                              <DropdownMenuItem 
+                                key={subItem.href} 
+                                onSelect={() => handleLinkClick(subItem.href)}
+                                className="cursor-pointer"
+                              >
+                                {subItem.label}
+                              </DropdownMenuItem>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     ))}
                     <DropdownMenuSeparator className="border-b-primary"/>
                   </div>
