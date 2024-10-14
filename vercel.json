@@ -2,6 +2,15 @@
     "functions": {
       "app/api/ai/image-to-video/*.ts": {
         "maxDuration": 60
+      },
+      "app/api/ai/audio-to-text/*.ts": {
+        "maxDuration": 60
+      },
+      "app/api/ai/image-to-image/*.ts": {
+        "maxDuration": 60
+      },
+      "app/api/ai/text-to-image/*.ts": {
+        "maxDuration": 60
       }
     }
   }
