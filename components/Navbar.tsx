@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { SunIcon, MoonIcon, ExternalLink } from "lucide-react";
+import { SunIcon, MoonIcon, ExternalLink, Circle } from "lucide-react";
 import { useTheme } from "next-themes";
 import { NeynarAuthButton, useNeynarContext } from "@neynar/react";
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -24,6 +24,15 @@ function Navbar() {
   const navItems = [
     { href: "/feed", label: "Feed" },
     { href: "/creator", label: "Creator" },
+    {
+      href: "/live",
+      label: "Live",
+      icon: <Circle className="h-2 w-2 fill-red-500" />,
+      dropdown: [
+        { href: "/live/create", label: "Create Stream" },
+        { href: "/live/broadcast", label: "Broadcast" },
+      ],
+    },
     // { href: "/profile", label: "Profile" },
   ];
 
@@ -98,9 +107,30 @@ function Navbar() {
 
           <div className="hidden md:flex items-center space-x-6">
             {navItems.map((item) => (
-              <NavLink key={item.href} href={item.href} active={pathname === item.href}>
-                {item.label}
-              </NavLink>
+              item.dropdown ? (
+                <DropdownMenu key={item.href}>
+                  <DropdownMenuTrigger className="flex items-center space-x-1">
+                  {item.icon}
+                    <span className={`text-base font-medium transition-colors ${
+                      pathname.startsWith(item.href) ? "text-primary" : "text-foreground hover:text-primary"
+                    }`}>
+                      {item.label}
+                    </span>
+                    
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    {item.dropdown.map((subItem) => (
+                      <DropdownMenuItem key={subItem.href} asChild>
+                        <Link href={subItem.href}>{subItem.label}</Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <NavLink key={item.href} href={item.href} active={pathname === item.href}>
+                  {item.label}
+                </NavLink>
+              )
             ))}
           </div>
 
