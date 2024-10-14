@@ -6,7 +6,7 @@ import { Src } from "@livepeer/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, CheckCircle2, Upload } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
@@ -85,11 +85,8 @@ export function VideoUploader() {
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>Upload Video</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <Card className="w-full bg-card shadow-xl">
+      <CardContent className="p-6">
         <div className="space-y-4">
           <Input
             type="file"
