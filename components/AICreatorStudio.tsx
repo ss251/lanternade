@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGr
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 export function AICreatorStudio() {
-  const [activeTab, setActiveTab] = useState('text-to-image');
+  const [activeTab, setActiveTab] = useState('textToImage');
   const [generatedContent, setGeneratedContent] = useState<{
     textToImage: string | null;
     imageToImage: string | null;
@@ -131,8 +131,8 @@ export function AICreatorStudio() {
     if (!content) return null;
 
     return (
-      <div className="mt-8 p-6 bg-secondary rounded-lg shadow-lg">
-        <h3 className="text-2xl font-bold mb-4">Generated Content</h3>
+      <div className="mt-8 p-4 bg-secondary rounded-lg shadow-lg">
+        <h3 className="text-xl font-bold mb-4">Generated Content</h3>
         {activeTab === 'audioToText' ? (
           <div className="space-y-4">
             {typeof content === 'object' && content && 'chunks' in content && content.chunks.length > 0 ? (
@@ -163,68 +163,69 @@ export function AICreatorStudio() {
           </div>
         ) : (
           <div className="space-y-4">
-            <Image src={content as string} alt="Generated content" width={512} height={512} className="rounded-lg shadow-md" />
+            <Image src={content as string} alt="Generated content" width={300} height={300} layout="responsive" className="rounded-lg shadow-md" />
           </div>
         )}
       </div>
     );
   };
 
+  const tabOptions = [
+    { value: 'textToImage', label: 'Text to Image' },
+    { value: 'imageToImage', label: 'Image to Image' },
+    { value: 'imageToVideo', label: 'Image to Video' },
+    { value: 'audioToText', label: 'Audio to Text' },
+  ];
+
   return (
     <Card className="w-full bg-card shadow-xl">
-      <CardContent className="p-6">
+      <CardContent className="p-4">
         <TooltipProvider>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid grid-cols-4 gap-4">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <TabsTrigger value="textToImage" className="py-2 px-4">Text to Image</TabsTrigger>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Generate images from text descriptions</p>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <TabsTrigger value="imageToImage" className="py-2 px-4">Image to Image</TabsTrigger>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Transform existing images based on prompts</p>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <TabsTrigger value="imageToVideo" className="py-2 px-4">Image to Video</TabsTrigger>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Create videos from still images</p>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <TabsTrigger value="audioToText" className="py-2 px-4">Audio to Text</TabsTrigger>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Transcribe audio files to text</p>
-                </TooltipContent>
-              </Tooltip>
-            </TabsList>
-            <TabsContent value="textToImage">
-              <TextToImageTab onGenerate={handleTextToImage} isLoading={isLoading} />
-            </TabsContent>
-            <TabsContent value="imageToImage">
-              <ImageToImageTab onGenerate={handleImageToImage} isLoading={isLoading} />
-            </TabsContent>
-            <TabsContent value="imageToVideo">
-              <ImageToVideoTab onGenerate={handleImageToVideo} isLoading={isLoading} />
-            </TabsContent>
-            <TabsContent value="audioToText">
-              <AudioToTextTab onGenerate={handleAudioToText} isLoading={isLoading} />
-            </TabsContent>
-          </Tabs>
-        </TooltipProvider>
+          {/* Mobile View */}
+          <div className="md:hidden">
+            <Select onValueChange={setActiveTab} value={activeTab}>
+              <SelectTrigger className="w-full mb-4">
+                <SelectValue placeholder="Select AI Tool" />
+              </SelectTrigger>
+              <SelectContent>
+                {tabOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        {renderGeneratedContent()}
+          {/* Desktop View */}
+          <div className="hidden md:block">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+              <TabsList className="grid grid-cols-4 gap-4">
+                {tabOptions.map((option) => (
+                  <Tooltip key={option.value}>
+                    <TooltipTrigger asChild>
+                      <TabsTrigger value={option.value} className="py-2 px-4">
+                        {option.label}
+                      </TabsTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{`Generate ${option.label.toLowerCase()}`}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
+              </TabsList>
+            </Tabs>
+          </div>
+
+          <div className="mt-4">
+            {activeTab === 'textToImage' && <TextToImageTab onGenerate={handleTextToImage} isLoading={isLoading} />}
+            {activeTab === 'imageToImage' && <ImageToImageTab onGenerate={handleImageToImage} isLoading={isLoading} />}
+            {activeTab === 'imageToVideo' && <ImageToVideoTab onGenerate={handleImageToVideo} isLoading={isLoading} />}
+            {activeTab === 'audioToText' && <AudioToTextTab onGenerate={handleAudioToText} isLoading={isLoading} />}
+          </div>
+
+          {renderGeneratedContent()}
+        </TooltipProvider>
       </CardContent>
     </Card>
   );
