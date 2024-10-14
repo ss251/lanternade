@@ -1,7 +1,11 @@
 import { Cast } from '@/types/neynar';
 
 export async function getFeed(fid: string, limit: number, cursor?: string): Promise<{ casts: Cast[], next?: { cursor: string } }> {
-  const url = `${process.env.NEXT_PUBLIC_API_URL}/api/farcaster/feed?fid=${fid}&limit=${limit}${cursor ? `&cursor=${cursor}` : ''}`;
+  const baseUrl = typeof window === 'undefined' 
+    ? process.env.NEXT_PUBLIC_API_URL 
+    : window.location.origin;
+  
+  const url = `${baseUrl}/api/farcaster/feed?fid=${fid}&limit=${limit}${cursor ? `&cursor=${cursor}` : ''}`;
   
   console.log('Fetching from URL:', url); // Debug log
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useInView } from 'react-intersection-observer';
 import { useNeynarContext } from "@neynar/react";
@@ -31,30 +31,24 @@ export default function ClientFeed({ initialCursor }: { initialCursor?: string }
     initialPageParam: initialCursor,
   });
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
   }, [inView, fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-  if (!user) {
-    return <div>Please sign in to view the feed.</div>;
-  }
-
-  if (status === 'pending') return <CastSkeleton />;
+  if (status === 'pending') return <CastSkeleton count={POSTS_PER_LOAD} />;
   if (status === 'error') return <div>Error: {(error as Error).message}</div>;
 
   return (
     <>
-      {data?.pages.map((page, i) => (
-        <React.Fragment key={i}>
-          {page.casts.map((cast: Cast) => (
-            <CastCard key={cast.hash} cast={cast} />
-          ))}
-        </React.Fragment>
-      ))}
+      {data?.pages.flatMap((page, i) => 
+        page.casts.map((cast: Cast) => (
+          <CastCard key={`${cast.hash}-${i}`} cast={cast} />
+        ))
+      )}
       <div ref={ref}>
-        {isFetchingNextPage ? <CastSkeleton /> : null}
+        {isFetchingNextPage && <CastSkeleton count={1} />}
       </div>
     </>
   );
