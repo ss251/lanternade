@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function BroadcastPage() {
+
   return (
     <div className="container mx-auto py-10 mt-20 px-6">
       <Card className="max-w-4xl mx-auto">
