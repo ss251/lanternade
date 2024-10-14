@@ -52,9 +52,11 @@ export type Embed = {
         duration_s: number;
       };
       html?: {
-        ogImage?: { url: string }[];
+        ogImage?: { url: string; width?: number; height?: number }[];
         ogTitle?: string;
         ogDescription?: string;
+        ogUrl?: string;
+        ogSiteName?: string;
       };
     };
   };

@@ -39,9 +39,7 @@ const CastCard: React.FC<CastCardProps> = ({ cast: initialCast, showRecast = tru
   });
 
   const navigateToCastPage = (e: React.MouseEvent) => {
-    if (!(e.target as HTMLElement).closest('.cast-actions')) {
-      router.push(`/cast/${cast.hash}`);
-    }
+    router.push(`/cast/${cast.hash}`);
   };
 
   const reactionMutation = useMutation<ReactionResponse, Error, { type: 'like' | 'recast', action: 'add' | 'remove' }>({
@@ -125,7 +123,10 @@ const CastCard: React.FC<CastCardProps> = ({ cast: initialCast, showRecast = tru
   };
 
   const renderCastContent = (contentCast: Cast, isRecast: boolean = false, showRecast: boolean = true) => (
-    <div className={`${isRecast && showRecast ? "dark:bg-secondary/50 bg-secondary/10 rounded-lg p-3 mt-3" : ""}`}>
+    <div 
+      className={`${isRecast && showRecast ? "dark:bg-secondary/50 bg-secondary/10 rounded-lg p-3 mt-3" : ""}`}
+      onClick={(e) => isRecast && showRecast && e.stopPropagation()}
+    >
       <div className="flex items-center mb-2">
         <Avatar className="mr-2">
           <div className="w-full h-full rounded-full overflow-hidden">
@@ -180,7 +181,7 @@ const CastCard: React.FC<CastCardProps> = ({ cast: initialCast, showRecast = tru
         ) : (
           renderCastContent(cast)
         )}
-        <div className="cast-actions flex justify-between text-sm text-muted-foreground mt-3">
+        <div className="flex justify-between text-sm text-muted-foreground mt-3" onClick={(e) => e.stopPropagation()}>
           <Button variant="ghost" size="sm" onClick={(e) => handleReaction(e, 'like')} className="flex items-center">
             <Heart size={16} className={`${cast.viewer_context?.liked ? 'fill-red-500' : ''} text-red-500`} />
             <span className="ml-1">{cast.reactions.likes_count}</span>
