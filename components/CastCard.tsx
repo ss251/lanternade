@@ -38,7 +38,7 @@ const CastCard: React.FC<CastCardProps> = ({ cast: initialCast, showRecast = tru
     enabled: !!recastHash && showRecast,
   });
 
-  const navigateToCastPage = (e: React.MouseEvent) => {
+  const navigateToCastPage = () => {
     router.push(`/cast/${cast.hash}`);
   };
 
