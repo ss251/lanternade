@@ -135,7 +135,12 @@ export type Frame = {
     action_type: string;
     target: string;
   }[];
-  input: Record<string, unknown>;
-  state: Record<string, unknown>;
+  input: {
+    text: string;
+  };
+  state: {
+    serialized: string;
+  };
   frames_url: string;
+  post_url: string;
 };
