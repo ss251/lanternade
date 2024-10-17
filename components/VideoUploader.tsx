@@ -10,7 +10,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, CheckCircle2, Upload } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-export function VideoUploader() {
+interface VideoUploaderProps {
+  onVideoSelect: (file: File | null, ipfsGatewayUrl: string | null, playbackId: string | null) => void;
+}
+
+export function VideoUploader({ onVideoSelect }: VideoUploaderProps) {
   const [video, setVideo] = useState<File | null>(null);
   const [playbackId, setPlaybackId] = useState<string>("");
   const [assetStatus, setAssetStatus] = useState<string>("idle");
@@ -20,6 +24,7 @@ export function VideoUploader() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setVideo(e.target.files[0]);
+      onVideoSelect(e.target.files[0], null, null);
     }
   };
 
@@ -69,6 +74,8 @@ export function VideoUploader() {
       if (data.status.phase === "ready") {
         clearInterval(interval);
         setPlaybackId(data.playbackId);
+        
+        onVideoSelect(video, data.playbackUrl, data.playbackId);
 
         const sourceRes = await fetch(
           `/api/get-playback-source?playbackId=${data.playbackId}`

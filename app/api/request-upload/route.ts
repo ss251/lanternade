@@ -10,7 +10,12 @@ export async function POST(request: Request) {
         Authorization: `Bearer ${process.env.LIVEPEER_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({
+        name,
+        storage: {
+          ipfs: true,
+        },
+      }),
     });
 
     if (!response.ok) {

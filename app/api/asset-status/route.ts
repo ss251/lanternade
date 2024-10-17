@@ -21,7 +21,11 @@ export async function GET(request: Request) {
     }
 
     const data = await response.json();
-    return NextResponse.json(data);
+    
+    // Extract IPFS hash from the source URL
+    const ipfsHash = data.storage?.ipfs?.cid || null;
+
+    return NextResponse.json({ ...data, ipfsHash });
   } catch (error) {
     console.error('Error in asset-status:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

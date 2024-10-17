@@ -32,3 +32,38 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Failed to fetch cast" }, { status: 500 });
   }
 }
+
+export async function POST(request: NextRequest) {
+  const { signer_uuid, text, embeds } = await request.json();
+
+  if (!signer_uuid || !text) {
+    return NextResponse.json({ error: "Signer UUID and text are required" }, { status: 400 });
+  }
+
+  try {
+    const response = await fetch("https://api.neynar.com/v2/farcaster/cast", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "api_key": process.env.NEYNAR_API_KEY || "",
+      },
+      body: JSON.stringify({
+        signer_uuid,
+        text,
+        embeds,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Neynar API error:", errorData);
+      return NextResponse.json({ error: errorData.message || "Failed to create cast" }, { status: response.status });
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error("Error creating cast:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}

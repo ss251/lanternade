@@ -10,6 +10,7 @@ import CastSkeleton from '@/components/CastSkeleton';
 import { Cast } from '@/types/neynar';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useOnline } from '@/hooks/useOnline';
+import { CreateCast } from '@/components/CreateCast';
 
 const POSTS_PER_LOAD = 5;
 const DEBOUNCE_DELAY = 200; // ms
@@ -61,6 +62,7 @@ export default function ClientFeed({ initialCursor }: { initialCursor?: string }
 
   return (
     <>
+      <CreateCast />
       {data?.pages.flatMap((page, i) => 
         page.casts.map((cast: Cast) => (
           <CastCard key={`${cast.hash}-${i}`} cast={cast} />
