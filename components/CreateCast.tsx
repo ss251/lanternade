@@ -36,10 +36,6 @@ export function CreateCast() {
     if (videoIpfsUrl && videoPlaybackId) {
       embeds.push({
         url: videoIpfsUrl,
-        metadata: {
-          type: 'video',
-          thumbnail_url: `https://livepeer.studio/api/thumbnail/${videoPlaybackId}`,
-        },
       });
     }
 
