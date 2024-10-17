@@ -1,13 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { PlayerWithControls } from "@/components/PlayerWithControls";
 import { Src } from "@livepeer/react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Card, CardContent } from "@/components/ui/card";
-import { AlertCircle, CheckCircle2, Upload } from "lucide-react";
+import { AlertCircle, CheckCircle2, Video, X } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface VideoUploaderProps {
@@ -20,48 +18,48 @@ export function VideoUploader({ onVideoSelect }: VideoUploaderProps) {
   const [assetStatus, setAssetStatus] = useState<string>("idle");
   const [videoSrc, setVideoSrc] = useState<Src[] | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setVideo(e.target.files[0]);
       onVideoSelect?.(e.target.files[0], null, null);
+      handleUpload(e.target.files[0]);
     }
   };
 
-  const handleUpload = async () => {
-    if (video) {
-      setAssetStatus("uploading");
-      setUploadProgress(0);
+  const handleUpload = async (file: File) => {
+    setAssetStatus("uploading");
+    setUploadProgress(0);
 
-      const res = await fetch("/api/request-upload", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: video.name }),
-      });
-      const data = await res.json();
+    const res = await fetch("/api/request-upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: file.name }),
+    });
+    const data = await res.json();
 
-      const xhr = new XMLHttpRequest();
-      xhr.open("PUT", data.url, true);
-      xhr.setRequestHeader("Content-Type", "application/octet-stream");
+    const xhr = new XMLHttpRequest();
+    xhr.open("PUT", data.url, true);
+    xhr.setRequestHeader("Content-Type", "application/octet-stream");
 
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) {
-          const percentComplete = (e.loaded / e.total) * 100;
-          setUploadProgress(percentComplete);
-        }
-      };
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) {
+        const percentComplete = (e.loaded / e.total) * 100;
+        setUploadProgress(percentComplete);
+      }
+    };
 
-      xhr.onload = () => {
-        if (xhr.status === 200) {
-          setAssetStatus("processing");
-          checkAssetStatus(data.asset.id);
-        } else {
-          setAssetStatus("error");
-        }
-      };
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        setAssetStatus("processing");
+        checkAssetStatus(data.asset.id);
+      } else {
+        setAssetStatus("error");
+      }
+    };
 
-      xhr.send(video);
-    }
+    xhr.send(file);
   };
 
   const checkAssetStatus = async (id: string) => {
@@ -91,23 +89,47 @@ export function VideoUploader({ onVideoSelect }: VideoUploaderProps) {
     }, 5000);
   };
 
+  const handleRemoveVideo = () => {
+    setVideo(null);
+    setPlaybackId("");
+    setAssetStatus("idle");
+    setVideoSrc(null);
+    setUploadProgress(0);
+    onVideoSelect?.(null, null, null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   return (
-    <Card className="w-full bg-card shadow-xl">
-      <CardContent className="p-6">
-        <div className="space-y-4">
-          <Input
-            type="file"
-            accept="video/*"
-            onChange={handleFileChange}
-            className="cursor-pointer"
-          />
-          <Button
-            onClick={handleUpload}
-            disabled={!video || assetStatus !== "idle"}
-            className="w-full"
-          >
-            <Upload className="mr-2 h-4 w-4" /> Upload Video
-          </Button>
+    <div className="space-y-4">
+      <input
+        type="file"
+        accept="video/*"
+        onChange={handleFileChange}
+        ref={fileInputRef}
+        className="hidden"
+      />
+      {!video ? (
+        <Button
+          onClick={() => fileInputRef.current?.click()}
+          className="w-full"
+        >
+          <Video className="mr-2 h-4 w-4" /> Select Video
+        </Button>
+      ) : (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm truncate">{video.name}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRemoveVideo}
+              className="text-red-500 hover:text-red-700"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
 
           {assetStatus !== "idle" && (
             <Alert
@@ -135,15 +157,14 @@ export function VideoUploader({ onVideoSelect }: VideoUploaderProps) {
           )}
 
           {playbackId && (
-            <div className="mt-6">
-              <h3 className="text-lg font-semibold mb-2">Preview</h3>
+            <div className="mt-2">
               <div className="aspect-video">
                 <PlayerWithControls src={videoSrc as Src[]} />
               </div>
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 }
