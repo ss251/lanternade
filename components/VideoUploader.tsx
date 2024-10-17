@@ -11,7 +11,7 @@ import { AlertCircle, CheckCircle2, Upload } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface VideoUploaderProps {
-  onVideoSelect: (file: File | null, ipfsGatewayUrl: string | null, playbackId: string | null) => void;
+  onVideoSelect?: (file: File | null, ipfsGatewayUrl: string | null, playbackId: string | null) => void;
 }
 
 export function VideoUploader({ onVideoSelect }: VideoUploaderProps) {
@@ -24,7 +24,7 @@ export function VideoUploader({ onVideoSelect }: VideoUploaderProps) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setVideo(e.target.files[0]);
-      onVideoSelect(e.target.files[0], null, null);
+      onVideoSelect?.(e.target.files[0], null, null);
     }
   };
 
@@ -75,7 +75,7 @@ export function VideoUploader({ onVideoSelect }: VideoUploaderProps) {
         clearInterval(interval);
         setPlaybackId(data.playbackId);
         
-        onVideoSelect(video, data.playbackUrl, data.playbackId);
+        onVideoSelect?.(video, data.playbackUrl, data.playbackId);
 
         const sourceRes = await fetch(
           `/api/get-playback-source?playbackId=${data.playbackId}`
