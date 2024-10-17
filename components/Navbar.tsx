@@ -28,6 +28,7 @@ function Navbar() {
   const navItems = [
     { href: "/feed", label: "Feed" },
     { href: "/creator", label: "Creator" },
+    { href: "/profile", label: "Profile" },
     {
       href: "/live",
       label: "Live",
