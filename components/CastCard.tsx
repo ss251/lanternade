@@ -38,8 +38,8 @@ const CastCard: React.FC<CastCardProps> = ({ cast: initialCast, showRecast = tru
     enabled: !!recastHash && showRecast,
   });
 
-  const navigateToCastPage = () => {
-    router.push(`/cast/${cast.hash}`);
+  const navigateToCastPage = (hash: string) => {
+    router.push(`/cast/${hash}`);
   };
 
   const reactionMutation = useMutation<ReactionResponse, Error, { type: 'like' | 'recast', action: 'add' | 'remove' }>({
@@ -123,10 +123,7 @@ const CastCard: React.FC<CastCardProps> = ({ cast: initialCast, showRecast = tru
   };
 
   const renderCastContent = (contentCast: Cast, isRecast: boolean = false, showRecast: boolean = true) => (
-    <div 
-      className={`${isRecast && showRecast ? "dark:bg-secondary/50 bg-secondary/10 rounded-lg p-3 mt-3" : ""}`}
-      onClick={(e) => isRecast && showRecast && e.stopPropagation()}
-    >
+    <div className={`${isRecast && showRecast ? "dark:bg-secondary/50 bg-secondary/10 rounded-lg p-3 mt-3" : ""}`}>
       <div className="flex items-center mb-2">
         <Avatar className="mr-2">
           <div className="w-full h-full rounded-full overflow-hidden">
@@ -157,17 +154,22 @@ const CastCard: React.FC<CastCardProps> = ({ cast: initialCast, showRecast = tru
           </p>
         </div>
       </div>
-      <p className="text-sm mb-2">{contentCast.text}</p>
-      {contentCast.embeds.length > 0 && (
-        <div className="mb-2">
-          <EmbedRenderer embeds={contentCast.embeds} frames={contentCast.frames} cast_hash={isRecast ? recastHash : cast.hash} cast={contentCast} />
-        </div>
-      )}
+      <div 
+        className="cursor-pointer"
+        onClick={() => navigateToCastPage(contentCast.hash)}
+      >
+        <p className="text-sm mb-2">{contentCast.text}</p>
+        {contentCast.embeds.length > 0 && (
+          <div className="mb-2">
+            <EmbedRenderer embeds={contentCast.embeds} frames={contentCast.frames} cast_hash={isRecast ? recastHash : cast.hash} cast={contentCast} />
+          </div>
+        )}
+      </div>
     </div>
   );
 
   return (
-    <Card className="overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={navigateToCastPage}>
+    <Card className="overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
       <CardContent className="p-4">
         {recastedCast && showRecast ? (
           <>
@@ -181,7 +183,7 @@ const CastCard: React.FC<CastCardProps> = ({ cast: initialCast, showRecast = tru
         ) : (
           renderCastContent(cast)
         )}
-        <div className="flex justify-between text-sm text-muted-foreground mt-3" onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-between text-sm text-muted-foreground mt-3">
           <Button variant="ghost" size="sm" onClick={(e) => handleReaction(e, 'like')} className="flex items-center">
             <Heart size={16} className={`${cast.viewer_context?.liked ? 'fill-red-500' : ''} text-red-500`} />
             <span className="ml-1">{cast.reactions.likes_count}</span>
