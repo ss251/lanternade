@@ -15,7 +15,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useState, MouseEvent, useRef } from "react";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+// import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 function Navbar() {
   const pathname = usePathname();
@@ -177,7 +177,7 @@ function Navbar() {
               <span className="sr-only">Toggle theme</span>
             </Button>
             
-            <ConnectButton accountStatus="avatar" showBalance={false} chainStatus="none"/>
+            {/* <ConnectButton accountStatus="avatar" showBalance={false} chainStatus="none"/> */}
 
             {isAuthenticated && user ? (
               <DropdownMenu>
