@@ -10,14 +10,16 @@ import { INeynarAuthenticatedUser } from '@neynar/react/dist/types/common';
 import CastSkeleton from '@/components/CastSkeleton';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+
 interface ProfileContentProps {
   user: INeynarAuthenticatedUser;
 }
 
-export function ProfileContent({ user: initialUser }: ProfileContentProps) {
+export function ProfileContent({ user: profileUser }: ProfileContentProps) {
   const { user: currentUser } = useNeynarContext();
-  const [user, setUser] = useState<INeynarAuthenticatedUser>(initialUser);
-  const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState<INeynarAuthenticatedUser>(profileUser);
+  const [isFollowing, setIsFollowing] = React.useState(profileUser.viewer_context?.following || false);
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const handleFollowToggle = async () => {
     if (!currentUser) return;
@@ -25,13 +27,13 @@ export function ProfileContent({ user: initialUser }: ProfileContentProps) {
     setIsLoading(true);
     try {
       const response = await fetch('/api/farcaster/follow', {
-        method: user.viewer_context?.following ? 'DELETE' : 'POST',
+        method: isFollowing ? 'DELETE' : 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           signer_uuid: currentUser.signer_uuid,
-          target_fid: user?.fid,
+          target_fid: profileUser.fid,
         }),
       });
 
@@ -39,13 +41,13 @@ export function ProfileContent({ user: initialUser }: ProfileContentProps) {
         throw new Error('Failed to update follow status');
       }
 
-      // Fetch the latest user data after follow/unfollow action
       const updatedUserResponse = await fetch(`/api/farcaster/user?fid=${user.fid}&viewer_fid=${currentUser.fid}`, { cache: 'no-store' });
       if (!updatedUserResponse.ok) {
         throw new Error('Failed to fetch updated user data');
       }
       const updatedUser = await updatedUserResponse.json();
       setUser(updatedUser);
+      setIsFollowing(!isFollowing);
     } catch (error) {
       console.error('Error updating follow status:', error);
     } finally {
@@ -76,13 +78,13 @@ export function ProfileContent({ user: initialUser }: ProfileContentProps) {
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-start">
-        <ProfileBio user={user} />
-        {currentUser && currentUser.fid !== user.fid && (
+        <ProfileBio user={profileUser} />
+        {currentUser && currentUser.fid !== profileUser.fid && (
           <Button
             onClick={handleFollowToggle}
             disabled={isLoading}
           >
-            {isLoading ? 'Loading...' : user.viewer_context?.following ? 'Unfollow' : 'Follow'}
+            {isLoading ? 'Loading...' : isFollowing ? 'Unfollow' : 'Follow'}
           </Button>
         )}
       </div>
@@ -92,10 +94,10 @@ export function ProfileContent({ user: initialUser }: ProfileContentProps) {
           <TabsTrigger value="replies">Replies</TabsTrigger>
         </TabsList>
         <TabsContent value="casts">
-          <ProfileCasts fid={user.fid} />
+          <ProfileCasts fid={profileUser.fid} />
         </TabsContent>
         <TabsContent value="replies">
-          <ProfileReplies fid={user.fid} />
+          <ProfileReplies fid={profileUser.fid} />
         </TabsContent>
       </Tabs>
     </div>
