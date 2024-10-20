@@ -139,9 +139,7 @@ const CastCard: React.FC<CastCardProps> = ({ cast: initialCast, showRecast = tru
         </Avatar>
         <div>
           <Link
-            href={`https://warpcast.com/${contentCast.author.username}`}
-            target="_blank"
-            rel="noopener noreferrer"
+            href={`/profile/${contentCast.author.fid}`}
             className="hover:underline"
           >
             <p className="font-semibold text-sm">{contentCast.author.display_name}</p>
