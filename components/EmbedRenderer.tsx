@@ -52,7 +52,7 @@ const EmbedRenderer: React.FC<EmbedRendererProps> = ({ embeds = [], frames = [],
             <div className="flex-grow p-4">
               <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-1">
                 <ExternalLink size={14} className="mr-1" />
-                {embed.metadata?.html?.ogSiteName || new URL(embed.url).hostname}
+                {embed.metadata?.html?.ogSiteName || new URL(embed?.url || '').hostname}
               </div>
               <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 line-clamp-2 mb-1">
                 {embed.metadata?.html?.ogTitle}

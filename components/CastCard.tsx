@@ -29,8 +29,8 @@ const CastCard: React.FC<CastCardProps> = ({ cast: initialCast, showRecast = tru
   const [showReplies, setShowReplies] = React.useState(false);
   const [isReplyModalOpen, setIsReplyModalOpen] = React.useState(false);
 
-  const recastEmbed = cast.embeds.find(embed => embed.cast_id);
-  const recastHash = recastEmbed?.cast_id?.hash;
+  const recastEmbed = cast.embeds.find(embed => embed.cast);
+  const recastHash = recastEmbed?.cast?.hash;
 
   const { data: recastedCast } = useQuery({
     queryKey: ['recastedCast', recastHash],
